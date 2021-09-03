@@ -1,6 +1,6 @@
-name: 'Your name here'
-description: 'Provide a description here'
-author: 'Your name or organization here'
+name: 'Need More Info'
+description: 'Requests more info when specified text is not included in a pull request or issue'
+author: 'Ben Elan'
 inputs:
   milliseconds: # change this
     required: true
@@ -9,3 +9,6 @@ inputs:
 runs:
   using: 'node12'
   main: 'dist/index.js'
+branding:
+  icon: alert-triangle
+  color: red
