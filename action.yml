@@ -10,5 +10,5 @@ runs:
   using: 'node12'
   main: 'dist/index.js'
 branding:
-  icon: alert-triangle
-  color: red
+  icon: info
+  color: yellow
