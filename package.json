@@ -1,8 +1,8 @@
 {
-  "name": "typescript-action",
+  "name": "need-info-action",
   "version": "0.0.0",
   "private": true,
-  "description": "TypeScript template action",
+  "description": "A GitHub Action that requests more info when required text is not included in issues and pull requests",
   "main": "lib/main.js",
   "scripts": {
     "build": "tsc",
@@ -15,17 +15,19 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/actions/typescript-action.git"
+    "url": "git+https://github.com/benelan/need-info-action.git"
   },
   "keywords": [
     "actions",
     "node",
-    "setup"
+    "need info",
+    "automation"
   ],
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "@actions/core": "^1.5.0"
+    "@actions/core": "^1.5.0",
+    "@actions/github": "^5.0.0"
   },
   "devDependencies": {
     "@types/node": "^16.7.10",

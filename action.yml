@@ -1,11 +1,16 @@
 name: 'Need More Info'
-description: 'Requests more info when specified text is not included in a pull request or issue'
+description: 'Requests more info when required text is not included in issues and pull requests'
 author: 'Ben Elan'
 inputs:
-  milliseconds: # change this
+  github_token:
+    description: 'Token for the repository. Can be passed in using {{ secrets.GITHUB_TOKEN }}'
     required: true
-    description: 'input description here'
-    default: 'default value if applicable'
+  require_all:
+    required: false
+    description: 'Everything in this list is required.'
+  require_one:
+    required: false
+    description: 'Only one item in this list is required.'
 runs:
   using: 'node12'
   main: 'dist/index.js'
