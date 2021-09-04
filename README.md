@@ -5,7 +5,7 @@
  ## How it Works
  
  ### Configuration
- The maintainer provides the following configuration properties:
+ The maintainer provides the following configuration:
  ```js
  {
    requiredContent: [
@@ -18,6 +18,7 @@
        items: ['third info', 'forth info'], # only one string is required
        response: 'More info is needed: Please provide either third or fourth.'
      },
+     ...
    ],
    labelsToCheck: ['bug', 'enhancement'],
    labelToAdd: 'need more info'
