@@ -1,105 +1,43 @@
-<p align="center">
-  <a href="https://github.com/actions/typescript-action/actions"><img alt="typescript-action status" src="https://github.com/actions/typescript-action/workflows/build-test/badge.svg"></a>
-</p>
+# Need More Info
 
-# Create a JavaScript Action using TypeScript
+ A GitHub Action that requests more info when required content is not included in issues and pull requests.
+ 
+ ## How it Works
+ 
+ ### Configuration
+ The maintainer provides the following configuration properties:
+ ```js
+ {
+   requiredContent: [
+     {
+       items: ['first info', 'second info'],
+       requireAll: true,
+       response: 'More info is needed: Please provide both first and second.'
+     },
+     {
+       items: ['third info', 'forth info'], # only one string is required
+       response: 'More info is needed: Please provide either third or fourth.'
+     },
+   ],
+   labelsToCheck: ['bug', 'enhancement'],
+   labelToAdd: 'need more info'
+ }
+ ```
 
-Use this template to bootstrap the creation of a TypeScript action.:rocket:
+ ### New Issue Webhook
+- The Action checks if a new issue has at least one of the `labelsToCheck`. If it does, it checks the issue body for the `requiredContent`. 
+  - If the issue satisfies the requirements then the Action ends. 
+  - If the requirement is not satisfied then `labelToAdd` is added to the issue. The Action comments on the issue with the `response` for all of the `requiredContent` items that were not provided.
+- If the issue does not have any `labelsToCheck` then the Action ends.
 
-This template includes compilation support, tests, a validation workflow, publishing, and versioning guidance.  
+### Issue Comment Webhook
+- If there is a comment on an issue with `labelToAdd` then the Action checks the comment for any `requiredContent`. If the comment satisfies any ONE `requiredContent` item then the `labelToAdd` is removed from the issue.
+- If the content does not have any `requiredContent` then the Action ends.
 
-If you are new, there's also a simpler introduction.  See the [Hello World JavaScript Action](https://github.com/actions/hello-world-javascript-action)
+> **Note:** If there were multiple content items that the commenter needed and they only provided one, the maintainer can manually ask for additional items and add back the `labelToAdd`.
 
-## Create an action from this template
+### Add Label Webhook
+- If one of the `labelsToCheck` is added to to an existing issue then the Action uses the same workflow as the New Issue Webhook. 
 
-Click the `Use this Template` and provide the new repo details for your action
-
-## Code in Main
-
-> First, you'll need to have a reasonably modern version of `node` handy. This won't work with versions older than 9, for instance.
-
-Install the dependencies  
-```bash
-$ npm install
-```
-
-Build the typescript and package it for distribution
-```bash
-$ npm run build && npm run package
-```
-
-Run the tests :heavy_check_mark:  
-```bash
-$ npm test
-
- PASS  ./index.test.js
-  ✓ throws invalid number (3ms)
-  ✓ wait 500 ms (504ms)
-  ✓ test runs (95ms)
-
-...
-```
-
-## Change action.yml
-
-The action.yml contains defines the inputs and output for your action.
-
-Update the action.yml with your name, description, inputs and outputs for your action.
-
-See the [documentation](https://help.github.com/en/articles/metadata-syntax-for-github-actions)
-
-## Change the Code
-
-Most toolkit and CI/CD operations involve async operations so the action is run in an async function.
-
-```javascript
-import * as core from '@actions/core';
-...
-
-async function run() {
-  try { 
-      ...
-  } 
-  catch (error) {
-    core.setFailed(error.message);
-  }
-}
-
-run()
-```
-
-See the [toolkit documentation](https://github.com/actions/toolkit/blob/master/README.md#packages) for the various packages.
-
-## Publish to a distribution branch
-
-Actions are run from GitHub repos so we will checkin the packed dist folder. 
-
-Then run [ncc](https://github.com/zeit/ncc) and push the results:
-```bash
-$ npm run package
-$ git add dist
-$ git commit -a -m "prod dependencies"
-$ git push origin releases/v1
-```
-
-Note: We recommend using the `--license` option for ncc, which will create a license file for all of the production node modules used in your project.
-
-Your action is now published! :rocket: 
-
-See the [versioning documentation](https://github.com/actions/toolkit/blob/master/docs/action-versioning.md)
-
-## Validate
-
-You can now validate the action by referencing `./` in a workflow in your repo (see [test.yml](.github/workflows/test.yml))
-
-```yaml
-uses: ./
-with:
-  milliseconds: 1000
-```
-
-See the [actions tab](https://github.com/actions/typescript-action/actions) for runs of this action! :rocket:
-
-## Usage:
-
-After testing you can [create a v1 tag](https://github.com/actions/toolkit/blob/master/docs/action-versioning.md) to reference the stable and latest V1 action
+### Closing Issues
+- This Action can be used in conjunction with the [Close Stale Issues](https://github.com/marketplace/actions/close-stale-issues) Action. You can set up the Stale Issues Action to delete issues with the `labelToAdd` after a certain amount of time.
