@@ -1,0 +1,20 @@
+  labelToAdd: 'need more info'
+  labelsToCheck:
+    - bug
+  exemptUsers:
+    - benelan
+  requiredItems: 
+    -
+      commentBody: 'Please include a sample that reproduces the issue'
+      requireAll: false
+      content:
+        - jsbin.com
+        - codepen.io
+        - jsfiddle.net
+        - codesandbox.io
+    -
+      commentBody: 'Please use the issue template'
+      requireAll: true
+      content:
+        - '## Actual Behavior'
+        - '## Expected Behavior'

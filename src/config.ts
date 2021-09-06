@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import * as yaml from 'js-yaml'
+import fs from 'fs'
 
 export interface RequiredItem {
   content: string[]
@@ -7,67 +8,68 @@ export interface RequiredItem {
   requireAll: boolean
 }
 
-export interface Config {
-  github_token: string
+export default class Config {
   requiredItems: RequiredItem[]
-  commentHeader: string | undefined
-  commentFooter: string | undefined
+  commentHeader: string
+  commentFooter: string
   labelToAdd: string
   labelsToCheck: string[]
   exemptUsers: string[]
-}
 
-export function isRequiredItem(item: any): item is RequiredItem {
-  if (
-    !(
-      item !== null &&
-      typeof item === 'object' &&
-      'commentBody' in item &&
-      'requireAll' in item &&
-      'content' in item &&
-      typeof item.commentBody === 'string' &&
-      typeof item.requireAll === 'boolean' &&
-      Array.isArray(item.content)
-    )
-  ) {
-    return false
+  constructor(configPath: string) {
+    const config = this.parseConfig(configPath)
+    this.requiredItems = config.requiredItems
+    this.labelToAdd = config.labelToAdd
+    this.labelsToCheck = config.labelsToCheck
+    this.exemptUsers = config.exemptUsers || []
+    this.commentFooter = config.commentFooter || ''
+    this.commentHeader = config.commentHeader || ''
   }
-  return item.content.every((i: any) => {
-    return typeof i === 'string'
-  })
-}
 
-export function isConfig(item: any): item is Config {
-  if (
-    !(
-      item !== null &&
-      typeof item === 'object' &&
-      'github_token' in item &&
-      'commentHeader' in item &&
-      'commentFooter' in item &&
-      'requiredItems' in item &&
-      'labelToAdd' in item &&
-      'labelsToCheck' in item &&
-      'exemptUsers' in item &&
-      typeof item.github_token === 'string' &&
-      typeof item.commentHeader === 'string' &&
-      typeof item.commentFooter === 'string' &&
-      typeof item.labelToAdd === 'string' &&
-      Array.isArray(item.requiredItems) &&
-      Array.isArray(item.labelsToCheck) &&
-      Array.isArray(item.exemptUsers)
-    )
-  ) {
-    return false
+  isValidRequiredItem = (item: any): item is RequiredItem => {
+    if (
+      !(
+        item !== null &&
+        typeof item === 'object' &&
+        'commentBody' in item &&
+        'requireAll' in item &&
+        'content' in item &&
+        typeof item.commentBody === 'string' &&
+        typeof item.requireAll === 'boolean' &&
+        Array.isArray(item.content)
+      )
+    ) {
+      return false
+    }
+    return item.content.every((i: any) => {
+      return typeof i === 'string'
+    })
   }
-  return item.requiredItems.every(isRequiredItem)
-}
 
-export function parseConfig(content: string): Config {
-  const data = yaml.load(content)
-  if (!isConfig(data)) {
-    throw new Error('Invalid configuration, ending action.')
-  } else {
-    return data
+  isValidConfig(item: any): boolean {
+    if (
+      !(
+        item !== null &&
+        typeof item === 'object' &&
+        'requiredItems' in item &&
+        'labelToAdd' in item &&
+        'labelsToCheck' in item &&
+        typeof item.labelToAdd === 'string' &&
+        Array.isArray(item.requiredItems) &&
+        Array.isArray(item.labelsToCheck)
+      )
+    ) {
+      return false
+    }
+    return item.requiredItems.every(this.isValidRequiredItem)
+  }
+
+  parseConfig(path: string): any {
+    const data = yaml.load(fs.readFileSync(path, 'utf8'))
+    if (!this.isValidConfig(data)) {
+      throw new Error('Invalid configuration, ending action.')
+    } else {
+      return data
+    }
   }
 }
