@@ -38,7 +38,7 @@ export default class Config {
       ? item.content.every((i: any) => typeof i === 'string')
       : false
 
-  isValidConfig(obj: any): boolean {
+  isValidConfig(obj: any): obj is Config {
     return obj !== null &&
       typeof obj === 'object' &&
       'requiredItems' in obj &&
