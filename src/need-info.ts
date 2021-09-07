@@ -5,7 +5,7 @@ import Config from './config'
 import {GitHub} from '@actions/github/lib/utils'
 
 interface Issue {
-  issue_number: number
+  number: number
   owner: string
   repo: string
 }
@@ -21,14 +21,15 @@ export default class NeedInfo {
 
   /** For issue or pull Request webhooks */
   onIssueOrPR(): void {
-    const {action} = github.context.payload
-    if (action === 'opened') {
+    core.debug('Starting issue or pr event workflow')
+    const {payload} = github.context
+    if (payload.action === 'opened') {
       core.debug('TODO: initial content check')
-    } else if (action === 'edited' || action === 'labeled') {
+    } else if (payload.action === 'edited' || payload.action === 'labeled') {
       core.debug('TODO: content check if post has a label to check')
     } else {
-      throw new Error(
-        `Unsupported issue or pull request action: ${action}, ending run.`
+      core.debug(
+        `Unsupported issue or pull request action: ${payload.action}, ending run`
       )
     }
   }
@@ -36,32 +37,41 @@ export default class NeedInfo {
   /** For issue comment webhooks */
   async onComment(): Promise<void> {
     core.debug('Starting comment event workflow')
-    const {payload, repo, issue} = github.context
-    // don't run on the delete action or if there is no comment in the payload
+    const {payload, issue} = github.context
+    /**
+     * don't run if there is no comment,
+     * a comment is being deleted,
+     * or if the issue doesn't have the label
+     */
     if (
+      payload.comment &&
       (payload.action === 'created' || payload.action === 'edited') &&
-      payload.comment !== undefined
+      this.hasLabelToAdd(issue)
     ) {
       core.debug('Getting comment')
-      // get the comment body
       const comment = await this.octokit.rest.issues.getComment({
-        ...repo,
+        ...issue,
         comment_id: payload.comment.id
       })
-      if (comment.data.body !== undefined) {
-        core.debug('checking comment for required items')
+      if (comment.data.body) {
+        core.debug('Checking comment for required items')
         const response = this.getResponse(comment.data.body)
-        if (response.length > 0) {
+        if (response.length) {
+          core.debug('Comment contains required items, removing label')
           this.octokit.rest.issues.removeLabel({
-            ...github.context.repo,
+            ...issue,
             issue_number: issue.number,
             name: this.config.labelToAdd
           })
+        } else {
+          core.debug('Comment does not contain required items, ending run')
         }
+      } else {
+        core.debug(`Comment is empty, ending run`)
       }
     } else {
-      throw new Error(
-        `The event was not a comment or the action "${payload.action}" is not supported, ending run.`
+      core.debug(
+        `The event was not a comment, didn't have the required label, or the action "${payload.action}" is not supported, ending run`
       )
     }
   }
@@ -84,7 +94,10 @@ export default class NeedInfo {
 
   /** Checks if an issue has the labelToAdd */
   async hasLabelToAdd(issue: Issue): Promise<boolean> {
-    const labels = await this.octokit.rest.issues.listLabelsOnIssue({...issue})
+    const labels = await this.octokit.rest.issues.listLabelsOnIssue({
+      ...issue,
+      issue_number: issue.number
+    })
     return labels.data.map(label => label.name).includes(this.config.labelToAdd)
   }
 
@@ -112,7 +125,7 @@ export default class NeedInfo {
     issue_number: number
   ): Promise<void> {
     await this.octokit.rest.issues.createComment({
-      ...github.context.repo,
+      ...github.context.issue,
       issue_number,
       body: `${header}\n${body}\n${footer}`
     })
