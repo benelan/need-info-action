@@ -19,18 +19,37 @@ export default class NeedInfo {
     this.octokit = github.getOctokit(token)
   }
 
+  async check(): Promise<void> {
+    const {eventName, payload} = github.context
+
+    if (eventName === 'issues' && payload.action === 'open') {
+      await this.onIssueOpen()
+    } else if (eventName === 'issues' && payload.action === 'labeled') {
+      await this.onIssueLabel()
+    } else if (
+      eventName === 'issue_comment' &&
+      (payload.action === 'created' || payload.action === 'edited')
+    ) {
+      await this.onIssueComment()
+    } else {
+      throw new Error(
+        `Unsupported event "${eventName}" and/or action "${payload.action}", ending run.`
+      )
+    }
+  }
+
   /** For issue open webhooks */
-  onIssueOpen(): void {
+  private async onIssueOpen(): Promise<void> {
     core.debug('Starting issue open event workflow')
   }
 
   /** For issue label webhooks */
-  onIssueLabel(): void {
+  private async onIssueLabel(): Promise<void> {
     core.debug('Starting issue label event workflow')
   }
 
   /** For issue comment webhooks */
-  async onIssueComment(): Promise<void> {
+  private async onIssueComment(): Promise<void> {
     core.debug('Starting comment event workflow')
     const {payload, issue} = github.context
 
