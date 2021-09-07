@@ -1,4 +1,3 @@
-/* eslint-disable filenames/match-regex */
 import {expect, test} from '@jest/globals'
 import Config from '../src/config'
 

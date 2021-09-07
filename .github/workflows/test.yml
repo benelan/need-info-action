@@ -14,11 +14,3 @@ jobs:
       - uses: ./
         with:
           github_token: "${{ secrets.GITHUB_TOKEN }}"
-          require_all:
-            - '#''
-            - test
-          require_one:
-            - codesandbox.io
-            - codepen.io
-            - jsbin.com
-            - jsfiddle.net
