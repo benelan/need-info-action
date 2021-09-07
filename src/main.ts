@@ -12,18 +12,14 @@ async function run(): Promise<void> {
     const needInfo = new NeedInfo(config, githubToken)
 
     if (githubEvent === 'issues' || githubEvent === 'pull_request') {
-      core.debug('TODO')
+      needInfo.onIssueOrPR()
     } else if (
       githubEvent === 'issue_comment' ||
       githubEvent === 'pull_request_review_comment'
     ) {
-      core.debug('TODO')
-    } else if (githubEvent === 'label') {
-      core.debug('TODO')
+      needInfo.onComment()
     } else {
-      core.error(
-        new Error(`Unrecognized event: ${githubEvent}, ending action.`)
-      )
+      throw new Error(`Unsupported event: ${githubEvent}, ending run.`)
     }
   } catch (e) {
     if (e instanceof Error) {
