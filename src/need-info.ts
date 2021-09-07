@@ -1,3 +1,4 @@
+/* eslint-disable i18n-text/no-en */
 import * as core from '@actions/core'
 import * as github from '@actions/github'
 import Config from './config'
@@ -18,6 +19,7 @@ export default class NeedInfo {
     this.octokit = github.getOctokit(token)
   }
 
+  /** For issue or pull Request webhooks */
   onIssueOrPR(): void {
     const {action} = github.context.payload
     if (action === 'opened') {
@@ -31,23 +33,31 @@ export default class NeedInfo {
     }
   }
 
+  /** For issue comment webhooks */
   async onComment(): Promise<void> {
-    const {payload, repo} = github.context
+    core.debug('Starting comment event workflow')
+    const {payload, repo, issue} = github.context
+    // don't run on the delete action or if there is no comment in the payload
     if (
       (payload.action === 'created' || payload.action === 'edited') &&
       payload.comment !== undefined
     ) {
+      core.debug('Getting comment')
+      // get the comment body
       const comment = await this.octokit.rest.issues.getComment({
         ...repo,
         comment_id: payload.comment.id
       })
       if (comment.data.body !== undefined) {
-        await this.createComment(
-          this.config.commentHeader,
-          this.getCommentBodies(comment.data.body).join('\n'),
-          this.config.commentFooter,
-          payload.comment.id
-        )
+        core.debug('checking comment for required items')
+        const response = this.getResponse(comment.data.body)
+        if (response.length > 0) {
+          this.octokit.rest.issues.removeLabel({
+            ...github.context.repo,
+            issue_number: issue.number,
+            name: this.config.labelToAdd
+          })
+        }
       }
     } else {
       throw new Error(
@@ -56,27 +66,33 @@ export default class NeedInfo {
     }
   }
 
-  async ensureLabelExists(): Promise<void> {
+  /** If the label doesn't exist then create it */
+  async ensureLabelExists(label: string): Promise<void> {
     try {
       await this.octokit.rest.issues.getLabel({
-        name: this.config.labelToAdd,
+        name: label,
         ...github.context.repo
       })
     } catch (e) {
       this.octokit.rest.issues.createLabel({
-        name: this.config.labelToAdd,
+        name: label,
         color: 'yellow',
         ...github.context.repo
       })
     }
   }
 
+  /** Checks if an issue has the labelToAdd */
   async hasLabelToAdd(issue: Issue): Promise<boolean> {
     const labels = await this.octokit.rest.issues.listLabelsOnIssue({...issue})
     return labels.data.map(label => label.name).includes(this.config.labelToAdd)
   }
 
-  getCommentBodies(post: string): string[] {
+  /**
+   * Checks the required items to make sure everything is there
+   * Returns the responses for all of the missing items
+   */
+  getResponse(post: string): string[] {
     const inPost = (text: string): boolean =>
       post.toLowerCase().includes(text.toLowerCase())
 
