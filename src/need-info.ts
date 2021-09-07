@@ -43,8 +43,8 @@ export default class NeedInfo {
       })
       if (comment.data.body) {
         core.debug('Checking comment for required items')
-        const response = this.getResponse(comment.data.body)
-        if (response.length) {
+        const responses = this.getResponses(comment.data.body)
+        if (responses.length) {
           core.debug('Comment contains required items, removing label')
           this.octokit.rest.issues.removeLabel({
             ...issue,
@@ -87,11 +87,22 @@ export default class NeedInfo {
     return labels.data.map(label => label.name).includes(this.config.labelToAdd)
   }
 
+  /** Checks if an issue has at least one labelToCheck */
+  async hasLabelToCheck(issue: Issue): Promise<boolean> {
+    const labels = await this.octokit.rest.issues.listLabelsOnIssue({
+      ...issue,
+      issue_number: issue.number
+    })
+    return this.config.labelsToCheck.some(l =>
+      labels.data.map(label => label.name).includes(l)
+    )
+  }
+
   /**
    * Checks the required items to make sure everything is there
    * Returns the responses for all of the missing items
    */
-  getResponse(post: string): string[] {
+  getResponses(post: string): string[] {
     const inPost = (text: string): boolean =>
       post.toLowerCase().includes(text.toLowerCase())
 
