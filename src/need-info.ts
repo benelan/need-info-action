@@ -19,35 +19,23 @@ export default class NeedInfo {
     this.octokit = github.getOctokit(token)
   }
 
-  /** For issue or pull Request webhooks */
-  onIssueOrPR(): void {
-    core.debug('Starting issue or pr event workflow')
-    const {payload} = github.context
-    if (payload.action === 'opened') {
-      core.debug('TODO: initial content check')
-    } else if (payload.action === 'edited' || payload.action === 'labeled') {
-      core.debug('TODO: content check if post has a label to check')
-    } else {
-      core.debug(
-        `Unsupported issue or pull request action: ${payload.action}, ending run`
-      )
-    }
+  /** For issue open webhooks */
+  onIssueOpen(): void {
+    core.debug('Starting issue open event workflow')
+  }
+
+  /** For issue label webhooks */
+  onIssueLabel(): void {
+    core.debug('Starting issue label event workflow')
   }
 
   /** For issue comment webhooks */
-  async onComment(): Promise<void> {
+  async onIssueComment(): Promise<void> {
     core.debug('Starting comment event workflow')
     const {payload, issue} = github.context
-    /**
-     * don't run if there is no comment,
-     * a comment is being deleted,
-     * or if the issue doesn't have the label
-     */
-    if (
-      payload.comment &&
-      (payload.action === 'created' || payload.action === 'edited') &&
-      this.hasLabelToAdd(issue)
-    ) {
+
+    // don't run if there is no comment or if the issue doesn't have the label
+    if (payload.comment && this.hasLabelToAdd(issue)) {
       core.debug('Getting comment')
       const comment = await this.octokit.rest.issues.getComment({
         ...issue,
@@ -70,9 +58,7 @@ export default class NeedInfo {
         core.debug(`Comment is empty, ending run`)
       }
     } else {
-      core.debug(
-        `The event was not a comment, didn't have the required label, or the action "${payload.action}" is not supported, ending run`
-      )
+      core.debug(`The comment doesn't have the required label, ending run`)
     }
   }
 
@@ -118,16 +104,11 @@ export default class NeedInfo {
       .map(item => item.commentBody)
   }
 
-  async createComment(
-    header: string,
-    body: string,
-    footer: string,
-    issue_number: number
-  ): Promise<void> {
+  async createComment(issue: Issue, body: string): Promise<void> {
     await this.octokit.rest.issues.createComment({
-      ...github.context.issue,
-      issue_number,
-      body: `${header}\n${body}\n${footer}`
+      ...issue,
+      issue_number: issue.number,
+      body: `${this.config.commentHeader}\n${body}\n${this.config.commentFooter}`
     })
   }
 }
