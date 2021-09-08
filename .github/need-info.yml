@@ -3,9 +3,9 @@
     - bug
   exemptUsers:
     - benelan
-  requiredItems: 
+  requiredItems:
     -
-      commentBody: 'Please include a sample that reproduces the issue'
+      response: 'Please include a sample that reproduces the issue'
       requireAll: false
       content:
         - jsbin.com
@@ -13,7 +13,7 @@
         - jsfiddle.net
         - codesandbox.io
     -
-      commentBody: 'Please use the issue template'
+      response: 'Please use the issue template'
       requireAll: true
       content:
         - '## Actual Behavior'

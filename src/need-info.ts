@@ -24,7 +24,10 @@ export default class NeedInfo {
 
     if (eventName === 'issues' && payload.action === 'open') {
       await this.onIssueOpen()
-    } else if (eventName === 'issues' && payload.action === 'labeled') {
+    } else if (
+      eventName === 'issues' &&
+      (payload.action === 'labeled' || payload.action === 'edited')
+    ) {
       await this.onIssueLabel()
     } else if (
       eventName === 'issue_comment' &&
@@ -131,14 +134,17 @@ export default class NeedInfo {
           (item.requireAll && !item.content.every(c => inPost(c))) ||
           (!item.requireAll && !item.content.some(c => inPost(c)))
       )
-      .map(item => item.commentBody)
+      .map(item => item.response)
   }
 
-  async createComment(issue: Issue, body: string): Promise<void> {
+  async createComment(issue: Issue, responses: string[]): Promise<void> {
+    const comment = `${this.config.commentHeader}\n${responses.join('\n')}\n${
+      this.config.commentFooter
+    }`
     await this.octokit.rest.issues.createComment({
       ...issue,
       issue_number: issue.number,
-      body: `${this.config.commentHeader}\n${body}\n${this.config.commentFooter}`
+      body: comment
     })
   }
 }

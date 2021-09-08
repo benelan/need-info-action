@@ -2,10 +2,10 @@ name: 'Verify Info'
 on:
   issues:
     types: [opened, edited, labeled]
-    branches: [ master ]
+    branches: [master]
   issue_comment:
     types: [created, edited]
-    branches: [ master ]
+    branches: [master]
 jobs:
   verify:
     runs-on: ubuntu-latest

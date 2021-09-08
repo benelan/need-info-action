@@ -4,7 +4,7 @@ import fs from 'fs'
 
 export interface RequiredItem {
   content: string[]
-  commentBody: string
+  response: string
   requireAll: boolean
 }
 
@@ -29,10 +29,10 @@ export default class Config {
   isValidRequiredItem = (item: any): item is RequiredItem =>
     item !== null &&
     typeof item === 'object' &&
-    'commentBody' in item &&
+    'response' in item &&
     'requireAll' in item &&
     'content' in item &&
-    typeof item.commentBody === 'string' &&
+    typeof item.response === 'string' &&
     typeof item.requireAll === 'boolean' &&
     Array.isArray(item.content)
       ? item.content.every((i: any) => typeof i === 'string')
