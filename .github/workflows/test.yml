@@ -1,10 +1,10 @@
 name: 'Verify Info'
 on:
   issues:
-    types: [opened]
+    types: [opened, edited, labeled]
     branches: [ master ]
-  pull_request:
-    types: [opened]
+  issue_comment:
+    types: [created, edited]
     branches: [ master ]
 jobs:
   verify:

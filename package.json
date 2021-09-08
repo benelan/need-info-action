@@ -2,7 +2,7 @@
   "name": "need-info-action",
   "version": "0.0.0",
   "private": true,
-  "description": "A GitHub Action that requests more info when required text is not included in issues and pull requests",
+  "description": "A GitHub Action that requests more info when required content is not included in issues",
   "main": "lib/main.js",
   "scripts": {
     "build": "tsc",

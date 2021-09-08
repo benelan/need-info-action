@@ -1,5 +1,5 @@
 name: 'Need More Info'
-description: 'Requests more info when required items are not included in issues and pull requests'
+description: 'Requests more info when required content is not included in issues'
 author: 'Ben Elan'
 inputs:
   github_token:
