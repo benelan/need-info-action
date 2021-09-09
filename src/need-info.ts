@@ -105,16 +105,17 @@ export default class NeedInfo {
 
   /** If the label doesn't exist then create it */
   async ensureLabelExists(label: string): Promise<void> {
-    console.log('Creating label if it does not exist')
     try {
+      console.log('checking if labelToAdd exists')
       await this.octokit.rest.issues.getLabel({
         name: label,
-        ...github.context.repo
+        owner: github.context.repo.owner,
+        repo: github.context.repo.repo
       })
     } catch (e) {
+      console.log('creating labelToAdd')
       this.octokit.rest.issues.createLabel({
         name: label,
-        color: '#FFFF00',
         owner: github.context.repo.owner,
         repo: github.context.repo.repo
       })
@@ -176,7 +177,8 @@ export default class NeedInfo {
   async addLabel(issue: Issue, label: string): Promise<void> {
     console.log('Adding label')
     this.octokit.rest.issues.addLabels({
-      ...issue,
+      owner: issue.owner,
+      repo: issue.repo,
       issue_number: issue.number,
       labels: [label]
     })
