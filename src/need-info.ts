@@ -27,10 +27,7 @@ export default class NeedInfo {
       (payload.action === 'opened' || payload.action === 'edited')
     ) {
       await this.onIssueOpen()
-    } else if (
-      eventName === 'issues' &&
-      (payload.action === 'labeled' || payload.action === 'edited')
-    ) {
+    } else if (eventName === 'issues' && payload.action === 'labeled') {
       await this.onIssueLabel()
     } else if (
       eventName === 'issue_comment' &&
