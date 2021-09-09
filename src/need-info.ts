@@ -36,14 +36,35 @@ export default class NeedInfo {
       await this.onIssueComment()
     } else {
       throw new Error(
-        `Unsupported event "${eventName}" and/or action "${payload.action}", ending run.`
+        `Unsupported event "${eventName}" and/or action "${payload.action}", ending run`
       )
     }
   }
 
   /** For issue open webhooks */
   private async onIssueOpen(): Promise<void> {
+    const {issue} = github.context
     core.debug('Starting issue open event workflow')
+    const labeled = await this.hasLabelToCheck(issue)
+    if (labeled) {
+      const issueInfo = await this.octokit.rest.issues.get({
+        ...issue,
+        issue_number: issue.number
+      })
+      const issueBody = issueInfo.data.body
+      if (issueBody) {
+        const responses = this.getResponses(issueBody)
+        if (responses.length > 0) {
+          await this.ensureLabelExists(this.config.labelToAdd)
+          await this.createComment(issue, responses)
+          await this.addLabel(issue, this.config.labelToAdd)
+        }
+      } else {
+        core.debug('The issue body is empty, ending run')
+      }
+    } else {
+      core.debug('The issue does not have a label to check, ending run')
+    }
   }
 
   /** For issue label webhooks */
@@ -145,6 +166,14 @@ export default class NeedInfo {
       ...issue,
       issue_number: issue.number,
       body: comment
+    })
+  }
+
+  async addLabel(issue: Issue, label: string): Promise<void> {
+    this.octokit.rest.issues.addLabels({
+      ...issue,
+      issue_number: issue.number,
+      labels: [label]
     })
   }
 }
