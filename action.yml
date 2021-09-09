@@ -8,7 +8,7 @@ inputs:
   config_path:
     required: false
     description: 'The path to the config file. Defaults to `.github/need-info.yml`.'
-    default: '/.github/need-info.yml'
+    default: '.github/need-info.yml'
 runs:
   using: 'node12'
   main: 'dist/index.js'
