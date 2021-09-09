@@ -47,7 +47,7 @@ export default class NeedInfo {
   /** For issue open webhooks */
   private async onIssueOpen(): Promise<void> {
     const {issue} = github.context
-    core.debug('Starting issue open event workflow')
+    console.log('Starting issue open event workflow')
     const labeled = await this.hasLabelToCheck(issue)
     if (labeled) {
       const issueInfo = await this.octokit.rest.issues.get({
@@ -63,48 +63,48 @@ export default class NeedInfo {
           await this.addLabel(issue, this.config.labelToAdd)
         }
       } else {
-        core.debug('The issue body is empty, ending run')
+        console.log('The issue body is empty, ending run')
       }
     } else {
-      core.debug('The issue does not have a label to check, ending run')
+      console.log('The issue does not have a label to check, ending run')
     }
   }
 
   /** For issue label webhooks */
   private async onIssueLabel(): Promise<void> {
-    core.debug('Starting issue label event workflow')
+    console.log('Starting issue label event workflow')
   }
 
   /** For issue comment webhooks */
   private async onIssueComment(): Promise<void> {
-    core.debug('Starting comment event workflow')
+    console.log('Starting comment event workflow')
     const {payload, issue} = github.context
 
     // don't run if there is no comment or if the issue doesn't have the label
     if (payload.comment && this.hasLabelToAdd(issue)) {
-      core.debug('Getting comment')
+      console.log('Getting comment')
       const comment = await this.octokit.rest.issues.getComment({
         ...issue,
         comment_id: payload.comment.id
       })
       if (comment.data.body) {
-        core.debug('Checking comment for required items')
+        console.log('Checking comment for required items')
         const responses = this.getResponses(comment.data.body)
         if (responses.length) {
-          core.debug('Comment contains required items, removing label')
+          console.log('Comment contains required items, removing label')
           this.octokit.rest.issues.removeLabel({
             ...issue,
             issue_number: issue.number,
             name: this.config.labelToAdd
           })
         } else {
-          core.debug('Comment does not contain required items, ending run')
+          console.log('Comment does not contain required items, ending run')
         }
       } else {
-        core.debug(`Comment is empty, ending run`)
+        console.log(`Comment is empty, ending run`)
       }
     } else {
-      core.debug(`The comment doesn't have the required label, ending run`)
+      console.log(`The comment doesn't have the required label, ending run`)
     }
   }
 

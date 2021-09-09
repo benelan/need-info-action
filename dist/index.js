@@ -202,7 +202,7 @@ class NeedInfo {
     onIssueOpen() {
         return __awaiter(this, void 0, void 0, function* () {
             const { issue } = github.context;
-            core.debug('Starting issue open event workflow');
+            console.log('Starting issue open event workflow');
             const labeled = yield this.hasLabelToCheck(issue);
             if (labeled) {
                 const issueInfo = yield this.octokit.rest.issues.get(Object.assign(Object.assign({}, issue), { issue_number: issue.number }));
@@ -216,46 +216,46 @@ class NeedInfo {
                     }
                 }
                 else {
-                    core.debug('The issue body is empty, ending run');
+                    console.log('The issue body is empty, ending run');
                 }
             }
             else {
-                core.debug('The issue does not have a label to check, ending run');
+                console.log('The issue does not have a label to check, ending run');
             }
         });
     }
     /** For issue label webhooks */
     onIssueLabel() {
         return __awaiter(this, void 0, void 0, function* () {
-            core.debug('Starting issue label event workflow');
+            console.log('Starting issue label event workflow');
         });
     }
     /** For issue comment webhooks */
     onIssueComment() {
         return __awaiter(this, void 0, void 0, function* () {
-            core.debug('Starting comment event workflow');
+            console.log('Starting comment event workflow');
             const { payload, issue } = github.context;
             // don't run if there is no comment or if the issue doesn't have the label
             if (payload.comment && this.hasLabelToAdd(issue)) {
-                core.debug('Getting comment');
+                console.log('Getting comment');
                 const comment = yield this.octokit.rest.issues.getComment(Object.assign(Object.assign({}, issue), { comment_id: payload.comment.id }));
                 if (comment.data.body) {
-                    core.debug('Checking comment for required items');
+                    console.log('Checking comment for required items');
                     const responses = this.getResponses(comment.data.body);
                     if (responses.length) {
-                        core.debug('Comment contains required items, removing label');
+                        console.log('Comment contains required items, removing label');
                         this.octokit.rest.issues.removeLabel(Object.assign(Object.assign({}, issue), { issue_number: issue.number, name: this.config.labelToAdd }));
                     }
                     else {
-                        core.debug('Comment does not contain required items, ending run');
+                        console.log('Comment does not contain required items, ending run');
                     }
                 }
                 else {
-                    core.debug(`Comment is empty, ending run`);
+                    console.log(`Comment is empty, ending run`);
                 }
             }
             else {
-                core.debug(`The comment doesn't have the required label, ending run`);
+                console.log(`The comment doesn't have the required label, ending run`);
             }
         });
     }
@@ -10706,7 +10706,7 @@ module.exports = require("zlib");
 /************************************************************************/
 /******/ 	// The module cache
 /******/ 	var __webpack_module_cache__ = {};
-/******/ 	
+/******/
 /******/ 	// The require function
 /******/ 	function __nccwpck_require__(moduleId) {
 /******/ 		// Check if module is in cache
@@ -10720,7 +10720,7 @@ module.exports = require("zlib");
 /******/ 			// no module.loaded needed
 /******/ 			exports: {}
 /******/ 		};
-/******/ 	
+/******/
 /******/ 		// Execute the module function
 /******/ 		var threw = true;
 /******/ 		try {
@@ -10729,24 +10729,24 @@ module.exports = require("zlib");
 /******/ 		} finally {
 /******/ 			if(threw) delete __webpack_module_cache__[moduleId];
 /******/ 		}
-/******/ 	
+/******/
 /******/ 		// Return the exports of the module
 /******/ 		return module.exports;
 /******/ 	}
-/******/ 	
+/******/
 /************************************************************************/
 /******/ 	/* webpack/runtime/compat */
-/******/ 	
+/******/
 /******/ 	if (typeof __nccwpck_require__ !== 'undefined') __nccwpck_require__.ab = __dirname + "/";
-/******/ 	
+/******/
 /************************************************************************/
-/******/ 	
+/******/
 /******/ 	// startup
 /******/ 	// Load entry module and return exports
 /******/ 	// This entry module is referenced by other modules so it can't be inlined
 /******/ 	var __webpack_exports__ = __nccwpck_require__(3109);
 /******/ 	module.exports = __webpack_exports__;
-/******/ 	
+/******/
 /******/ })()
 ;
 //# sourceMappingURL=index.js.map
