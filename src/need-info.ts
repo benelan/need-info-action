@@ -118,7 +118,8 @@ export default class NeedInfo {
       this.octokit.rest.issues.createLabel({
         name,
         owner,
-        repo
+        repo,
+        color: '#FFFF00'
       })
     }
   }
