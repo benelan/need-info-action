@@ -261,13 +261,15 @@ class NeedInfo {
     ensureLabelExists(name) {
         return __awaiter(this, void 0, void 0, function* () {
             const { repo, owner } = github.context.repo;
-            console.log('checking if labelToAdd exists');
-            const githubLabel = yield this.octokit.rest.issues.getLabel({
-                name,
-                owner,
-                repo
-            });
-            if (!githubLabel) {
+            try {
+                console.log('checking if labelToAdd exists');
+                yield this.octokit.rest.issues.getLabel({
+                    name,
+                    owner,
+                    repo
+                });
+            }
+            catch (e) {
                 console.log('creating labelToAdd');
                 this.octokit.rest.issues.createLabel({
                     name,

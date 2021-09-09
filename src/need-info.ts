@@ -106,13 +106,14 @@ export default class NeedInfo {
   /** If the label doesn't exist then create it */
   async ensureLabelExists(name: string): Promise<void> {
     const {repo, owner} = github.context.repo
-    console.log('checking if labelToAdd exists')
-    const githubLabel = await this.octokit.rest.issues.getLabel({
-      name,
-      owner,
-      repo
-    })
-    if (!githubLabel) {
+    try {
+      console.log('checking if labelToAdd exists')
+      await this.octokit.rest.issues.getLabel({
+        name,
+        owner,
+        repo
+      })
+    } catch (e) {
       console.log('creating labelToAdd')
       this.octokit.rest.issues.createLabel({
         name,
