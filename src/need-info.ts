@@ -105,6 +105,7 @@ export default class NeedInfo {
 
   /** If the label doesn't exist then create it */
   async ensureLabelExists(label: string): Promise<void> {
+    console.log('creating label if it does not exist')
     try {
       await this.octokit.rest.issues.getLabel({
         name: label,
@@ -114,13 +115,15 @@ export default class NeedInfo {
       this.octokit.rest.issues.createLabel({
         name: label,
         color: 'yellow',
-        ...github.context.repo
+        owner: github.context.repo.owner,
+        repo: github.context.repo.repo
       })
     }
   }
 
   /** Checks if an issue has the labelToAdd */
   async hasLabelToAdd(issue: Issue): Promise<boolean> {
+    console.log('checking if an issue has the labelToAdd')
     const labels = await this.octokit.rest.issues.listLabelsOnIssue({
       ...issue,
       issue_number: issue.number
@@ -130,6 +133,7 @@ export default class NeedInfo {
 
   /** Checks if an issue has at least one labelToCheck */
   async hasLabelToCheck(issue: Issue): Promise<boolean> {
+    console.log('checking if an issue has a labelToCheck')
     const labels = await this.octokit.rest.issues.listLabelsOnIssue({
       ...issue,
       issue_number: issue.number
@@ -144,6 +148,7 @@ export default class NeedInfo {
    * Returns the responses for all of the missing items
    */
   getResponses(post: string): string[] {
+    console.log('parsing for the required items')
     const inPost = (text: string): boolean =>
       post.toLowerCase().includes(text.toLowerCase())
 
@@ -157,6 +162,7 @@ export default class NeedInfo {
   }
 
   async createComment(issue: Issue, responses: string[]): Promise<void> {
+    console.log('creating a comment')
     const comment = `${this.config.commentHeader}\n${responses.join('\n')}\n${
       this.config.commentFooter
     }`
@@ -168,6 +174,7 @@ export default class NeedInfo {
   }
 
   async addLabel(issue: Issue, label: string): Promise<void> {
+    console.log('adding a label')
     this.octokit.rest.issues.addLabels({
       ...issue,
       issue_number: issue.number,

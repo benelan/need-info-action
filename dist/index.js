@@ -260,17 +260,24 @@ class NeedInfo {
     /** If the label doesn't exist then create it */
     ensureLabelExists(label) {
         return __awaiter(this, void 0, void 0, function* () {
+            console.log('creating label if it does not exist');
             try {
                 yield this.octokit.rest.issues.getLabel(Object.assign({ name: label }, github.context.repo));
             }
             catch (e) {
-                this.octokit.rest.issues.createLabel(Object.assign({ name: label, color: 'yellow' }, github.context.repo));
+                this.octokit.rest.issues.createLabel({
+                    name: label,
+                    color: 'yellow',
+                    owner: github.context.repo.owner,
+                    repo: github.context.repo.repo
+                });
             }
         });
     }
     /** Checks if an issue has the labelToAdd */
     hasLabelToAdd(issue) {
         return __awaiter(this, void 0, void 0, function* () {
+            console.log('checking if an issue has the labelToAdd');
             const labels = yield this.octokit.rest.issues.listLabelsOnIssue(Object.assign(Object.assign({}, issue), { issue_number: issue.number }));
             return labels.data.map(label => label.name).includes(this.config.labelToAdd);
         });
@@ -278,6 +285,7 @@ class NeedInfo {
     /** Checks if an issue has at least one labelToCheck */
     hasLabelToCheck(issue) {
         return __awaiter(this, void 0, void 0, function* () {
+            console.log('checking if an issue has a labelToCheck');
             const labels = yield this.octokit.rest.issues.listLabelsOnIssue(Object.assign(Object.assign({}, issue), { issue_number: issue.number }));
             return this.config.labelsToCheck.some(l => labels.data.map(label => label.name).includes(l));
         });
@@ -287,6 +295,7 @@ class NeedInfo {
      * Returns the responses for all of the missing items
      */
     getResponses(post) {
+        console.log('parsing for the required items');
         const inPost = (text) => post.toLowerCase().includes(text.toLowerCase());
         return this.config.requiredItems
             .filter(item => (item.requireAll && !item.content.every(c => inPost(c))) ||
@@ -295,12 +304,14 @@ class NeedInfo {
     }
     createComment(issue, responses) {
         return __awaiter(this, void 0, void 0, function* () {
+            console.log('creating a comment');
             const comment = `${this.config.commentHeader}\n${responses.join('\n')}\n${this.config.commentFooter}`;
             yield this.octokit.rest.issues.createComment(Object.assign(Object.assign({}, issue), { issue_number: issue.number, body: comment }));
         });
     }
     addLabel(issue, label) {
         return __awaiter(this, void 0, void 0, function* () {
+            console.log('adding a label');
             this.octokit.rest.issues.addLabels(Object.assign(Object.assign({}, issue), { issue_number: issue.number, labels: [label] }));
         });
     }
