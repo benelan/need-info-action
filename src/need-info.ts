@@ -22,7 +22,7 @@ export default class NeedInfo {
   async check(): Promise<void> {
     const {eventName, payload} = github.context
 
-    if (eventName === 'issues' && payload.action === 'open') {
+    if (eventName === 'issues' && payload.action === 'opened') {
       await this.onIssueOpen()
     } else if (
       eventName === 'issues' &&
