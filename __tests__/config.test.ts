@@ -1,3 +1,4 @@
+// eslint-disable-next-line filenames/match-regex
 import {expect, test} from '@jest/globals'
 import Config from '../src/config'
 
