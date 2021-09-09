@@ -33,7 +33,7 @@
   "devDependencies": {
     "@octokit/types": "^6.27.0",
     "@types/js-yaml": "^4.0.3",
-    "@types/node": "^16.7.10",
+    "@types/node": "^16.9.0",
     "@typescript-eslint/parser": "^4.31.0",
     "@vercel/ncc": "^0.29.0",
     "eslint": "^7.31.0",
