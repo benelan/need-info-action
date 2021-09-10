@@ -314,8 +314,8 @@ class NeedInfo {
     createComment(issue, responses) {
         return __awaiter(this, void 0, void 0, function* () {
             console.log('Creating comment');
-            const comment = `${this.config.commentHeader}\n\n
-    ${responses.join('\n')}\n\n
+            const comment = `${this.config.commentHeader}\n
+    ${responses.join('\n')}\n
     ${this.config.commentFooter}`;
             yield this.octokit.rest.issues.createComment(Object.assign(Object.assign({}, issue), { issue_number: issue.number, body: comment }));
         });

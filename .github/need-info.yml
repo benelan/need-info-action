@@ -5,13 +5,13 @@ commentHeader: 'This is being marked as need info for the following reasons:'
 commentFooter: 'Please comment with items above, or the issue will be closed in a week'
 requiredItems:
   -
-    response: '  - Use the issue template for bugs'
+    response: '&nbsp;- Use the issue template for bugs'
     requireAll: true
     content:
       - '## Actual Behavior'
       - '## Expected Behavior'
   -
-    response: '  - Include a sample that reproduces the issue'
+    response: '&nbsp;- Include a sample that reproduces the issue'
     requireAll: false
     content:
       - jsbin.com
