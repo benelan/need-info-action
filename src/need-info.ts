@@ -22,9 +22,7 @@ export default class NeedInfo {
 
     if (
       eventName === 'issues' &&
-      (payload.action === 'opened' ||
-        payload.action === 'edited' ||
-        payload.action === 'labeled')
+      (payload.action === 'edited' || payload.action === 'labeled')
     ) {
       await this.onIssueEvent()
     } else if (
@@ -162,6 +160,7 @@ export default class NeedInfo {
     console.log('Parsing for required items')
     const inPost = (text: string): boolean =>
       post.toLowerCase().includes(text.toLowerCase())
+    console.log(JSON.stringify(this.config))
 
     return this.config.requiredItems
       .filter(
