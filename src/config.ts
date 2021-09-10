@@ -1,6 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import * as yaml from 'js-yaml'
-import fs from 'fs'
 
 export interface RequiredItem {
   content: string[]
@@ -16,8 +14,8 @@ export default class Config {
   labelsToCheck: string[]
   exemptUsers: string[]
 
-  constructor(configPath: string) {
-    const config = this.parseConfig(configPath)
+  constructor(content: string) {
+    const config = this.parseConfig(content)
     this.requiredItems = config.requiredItems
     this.labelToAdd = config.labelToAdd
     this.labelsToCheck = config.labelsToCheck
@@ -26,7 +24,7 @@ export default class Config {
     this.commentHeader = config.commentHeader || ''
   }
 
-  isValidRequiredItem = (item: any): item is RequiredItem =>
+  isValidRequiredItem = (item: RequiredItem): item is RequiredItem =>
     item !== null &&
     typeof item === 'object' &&
     'response' in item &&
@@ -35,10 +33,10 @@ export default class Config {
     typeof item.response === 'string' &&
     typeof item.requireAll === 'boolean' &&
     Array.isArray(item.content)
-      ? item.content.every((i: any) => typeof i === 'string')
+      ? item.content.every((i: string) => typeof i === 'string')
       : false
 
-  isValidConfig(obj: any): obj is Config {
+  isValidConfig(obj: Config): obj is Config {
     return obj !== null &&
       typeof obj === 'object' &&
       'requiredItems' in obj &&
@@ -51,8 +49,9 @@ export default class Config {
       : false
   }
 
-  parseConfig(path: string): Config {
-    const data: any = yaml.load(fs.readFileSync(path, 'utf8'))
+  parseConfig(content: string): Config {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const data: any = yaml.load(content)
     if (this.isValidConfig(data)) return data
     throw new Error('Invalid configuration, ending action.')
   }

@@ -12,9 +12,9 @@ export default class NeedInfo {
   config: Config
   octokit: InstanceType<typeof GitHub>
 
-  constructor(config: Config, token: string) {
+  constructor(config: Config, octokit: InstanceType<typeof GitHub>) {
     this.config = config
-    this.octokit = github.getOctokit(token)
+    this.octokit = octokit
   }
 
   async check(): Promise<void> {
