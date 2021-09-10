@@ -22,16 +22,16 @@ export default class NeedInfo {
 
     if (
       eventName === 'issues' &&
-      (payload.action === 'opened' || payload.action === 'edited')
+      (payload.action === 'opened' ||
+        payload.action === 'edited' ||
+        payload.action === 'labeled')
     ) {
-      await this.onIssueOpen()
-    } else if (eventName === 'issues' && payload.action === 'labeled') {
-      await this.onIssueLabel()
+      await this.onIssueEvent()
     } else if (
       eventName === 'issue_comment' &&
       (payload.action === 'created' || payload.action === 'edited')
     ) {
-      await this.onIssueComment()
+      await this.onCommentEvent()
     } else {
       throw new Error(
         `Unsupported event "${eventName}" and/or action "${payload.action}", ending run`
@@ -39,20 +39,25 @@ export default class NeedInfo {
     }
   }
 
-  /** For issue open webhooks */
-  private async onIssueOpen(): Promise<void> {
+  /** For issue webhooks */
+  private async onIssueEvent(): Promise<void> {
     const {issue} = github.context
-    console.log('Starting issue open event workflow')
+    console.log('Starting issue event workflow')
     const labeled = await this.hasLabelToCheck(issue)
     if (labeled) {
       const issueInfo = await this.octokit.rest.issues.get({
         ...issue,
         issue_number: issue.number
       })
-      const issueBody = issueInfo.data.body
-      if (issueBody) {
-        const responses = this.getResponses(issueBody)
+      const {body} = issueInfo.data
+      if (body) {
+        const responses = this.getResponses(body)
+        console.log(`responses: ${responses.join(', ')}`)
+
         if (responses.length > 0) {
+          console.log(
+            'Comment does not have required items, adding comment and label'
+          )
           await this.ensureLabelExists(this.config.labelToAdd)
           await this.createComment(issue, responses)
           await this.addLabel(issue, this.config.labelToAdd)
@@ -65,26 +70,28 @@ export default class NeedInfo {
     }
   }
 
-  /** For issue label webhooks */
-  private async onIssueLabel(): Promise<void> {
-    console.log('Starting issue label event workflow')
-  }
-
   /** For issue comment webhooks */
-  private async onIssueComment(): Promise<void> {
+  private async onCommentEvent(): Promise<void> {
     console.log('Starting comment event workflow')
     const {payload, issue} = github.context
 
     // don't run if there is no comment or if the issue doesn't have the label
     if (payload.comment && this.hasLabelToAdd(issue)) {
-      console.log('Getting comment')
-      const comment = await this.octokit.rest.issues.getComment({
+      console.log('Getting comment and issue')
+      const commentInfo = await this.octokit.rest.issues.getComment({
         ...issue,
         comment_id: payload.comment.id
       })
-      if (comment.data.body) {
+      const issueInfo = await this.octokit.rest.issues.get({
+        ...issue,
+        issue_number: issue.number
+      })
+      const {body, user} = commentInfo.data
+      const issueUser = issueInfo.data.user
+      if (body && user && issueUser && issueUser.login === user.login) {
         console.log('Checking comment for required items')
-        const responses = this.getResponses(comment.data.body)
+        const responses = this.getResponses(body)
+        console.log(`responses: ${responses.join(', ')}`)
         if (responses.length) {
           console.log('Comment contains required items, removing label')
           this.octokit.rest.issues.removeLabel({
@@ -96,10 +103,12 @@ export default class NeedInfo {
           console.log('Comment does not contain required items, ending run')
         }
       } else {
-        console.log(`Comment is empty, ending run`)
+        console.log(
+          `The commenter is not the original poster or the comment is empty, ending run`
+        )
       }
     } else {
-      console.log(`The comment doesn't have the required label, ending run`)
+      console.log(`The comment does not have the required label, ending run`)
     }
   }
 
@@ -118,8 +127,7 @@ export default class NeedInfo {
       this.octokit.rest.issues.createLabel({
         name,
         owner,
-        repo,
-        color: '#FFFF00'
+        repo
       })
     }
   }
@@ -166,9 +174,9 @@ export default class NeedInfo {
 
   async createComment(issue: Issue, responses: string[]): Promise<void> {
     console.log('Creating comment')
-    const comment = `${this.config.commentHeader}\n${responses.join('\n')}\n${
-      this.config.commentFooter
-    }`
+    const comment = `${this.config.commentHeader}\n\n
+    ${responses.join('\n')}\n\n
+    ${this.config.commentFooter}`
     await this.octokit.rest.issues.createComment({
       ...issue,
       issue_number: issue.number,
