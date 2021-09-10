@@ -178,9 +178,9 @@ export default class NeedInfo {
   async createComment(responses: string[]): Promise<void> {
     console.log('Creating comment')
     const {repo, owner, number} = github.context.issue
-    const comment = `${this.config.commentHeader}\n${responses.join('\n')}\n${
-      this.config.commentFooter
-    }`
+    const comment = `${this.config.commentHeader}\n\n${responses.join(
+      '\n'
+    )}\n\n${this.config.commentFooter}`
     await this.octokit.rest.issues.createComment({
       owner,
       repo,
