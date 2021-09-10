@@ -2,12 +2,6 @@ import * as github from '@actions/github'
 import Config from './config'
 import {GitHub} from '@actions/github/lib/utils'
 
-interface Issue {
-  number: number
-  owner: string
-  repo: string
-}
-
 export default class NeedInfo {
   config: Config
   octokit: InstanceType<typeof GitHub>
@@ -17,7 +11,8 @@ export default class NeedInfo {
     this.octokit = octokit
   }
 
-  async check(): Promise<void> {
+  /** Checks the github event and action runs the appropriate workflow */
+  async verify(): Promise<void> {
     const {eventName, payload} = github.context
 
     if (
@@ -39,14 +34,17 @@ export default class NeedInfo {
 
   /** For issue webhooks */
   private async onIssueEvent(): Promise<void> {
-    const {issue} = github.context
     console.log('Starting issue event workflow')
-    const labeled = await this.hasLabelToCheck(issue)
+    const {repo, owner, number} = github.context.issue
+
+    const labeled = await this.hasLabelToCheck()
     if (labeled) {
       const issueInfo = await this.octokit.rest.issues.get({
-        ...issue,
-        issue_number: issue.number
+        owner,
+        repo,
+        issue_number: number
       })
+
       const {body} = issueInfo.data
       if (body) {
         const responses = this.getResponses(body)
@@ -57,8 +55,8 @@ export default class NeedInfo {
             'Comment does not have required items, adding comment and label'
           )
           await this.ensureLabelExists(this.config.labelToAdd)
-          await this.createComment(issue, responses)
-          await this.addLabel(issue, this.config.labelToAdd)
+          await this.createComment(responses)
+          await this.addLabel(this.config.labelToAdd)
         }
       } else {
         console.log('The issue body is empty, ending run')
@@ -73,8 +71,8 @@ export default class NeedInfo {
     console.log('Starting comment event workflow')
     const {payload, issue} = github.context
 
-    // don't run if there is no comment or if the issue doesn't have the label
-    if (payload.comment && this.hasLabelToAdd(issue)) {
+    // run if there is a comment and the issue has the label
+    if (payload.comment && this.hasLabelToAdd()) {
       console.log('Getting comment and issue')
       const commentInfo = await this.octokit.rest.issues.getComment({
         ...issue,
@@ -84,13 +82,16 @@ export default class NeedInfo {
         ...issue,
         issue_number: issue.number
       })
+
       const {body, user} = commentInfo.data
       const issueUser = issueInfo.data.user
+      // make sure the commenter is the original poster
       if (body && user && issueUser && issueUser.login === user.login) {
         console.log('Checking comment for required items')
         const responses = this.getResponses(body)
         console.log(`responses: ${responses.join(', ')}`)
-        if (responses.length) {
+
+        if (responses.length < this.config.requiredItems.length) {
           console.log('Comment contains required items, removing label')
           this.octokit.rest.issues.removeLabel({
             ...issue,
@@ -131,21 +132,25 @@ export default class NeedInfo {
   }
 
   /** Checks if an issue has the labelToAdd */
-  async hasLabelToAdd(issue: Issue): Promise<boolean> {
+  async hasLabelToAdd(): Promise<boolean> {
     console.log('Checking if the issue has the labelToAdd')
+    const {repo, owner, number} = github.context.issue
     const labels = await this.octokit.rest.issues.listLabelsOnIssue({
-      ...issue,
-      issue_number: issue.number
+      owner,
+      repo,
+      issue_number: number
     })
     return labels.data.map(label => label.name).includes(this.config.labelToAdd)
   }
 
   /** Checks if an issue has at least one labelToCheck */
-  async hasLabelToCheck(issue: Issue): Promise<boolean> {
+  async hasLabelToCheck(): Promise<boolean> {
     console.log('Checking if the issue has a labelToCheck')
+    const {repo, owner, number} = github.context.issue
     const labels = await this.octokit.rest.issues.listLabelsOnIssue({
-      ...issue,
-      issue_number: issue.number
+      owner,
+      repo,
+      issue_number: number
     })
     return this.config.labelsToCheck.some(l =>
       labels.data.map(label => label.name).includes(l)
@@ -160,7 +165,6 @@ export default class NeedInfo {
     console.log('Parsing for required items')
     const inPost = (text: string): boolean =>
       post.toLowerCase().includes(text.toLowerCase())
-    console.log(JSON.stringify(this.config))
 
     return this.config.requiredItems
       .filter(
@@ -171,24 +175,27 @@ export default class NeedInfo {
       .map(item => item.response)
   }
 
-  async createComment(issue: Issue, responses: string[]): Promise<void> {
+  async createComment(responses: string[]): Promise<void> {
     console.log('Creating comment')
+    const {repo, owner, number} = github.context.issue
     const comment = `${this.config.commentHeader}\n
     ${responses.join('\n')}\n
     ${this.config.commentFooter}`
     await this.octokit.rest.issues.createComment({
-      ...issue,
-      issue_number: issue.number,
+      owner,
+      repo,
+      issue_number: number,
       body: comment
     })
   }
 
-  async addLabel(issue: Issue, label: string): Promise<void> {
+  async addLabel(label: string): Promise<void> {
     console.log('Adding label')
+    const {repo, owner, number} = github.context.issue
     this.octokit.rest.issues.addLabels({
-      owner: issue.owner,
-      repo: issue.repo,
-      issue_number: issue.number,
+      owner,
+      repo,
+      issue_number: number,
       labels: [label]
     })
   }

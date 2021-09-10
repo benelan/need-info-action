@@ -19,11 +19,10 @@ async function run(): Promise<void> {
     }
 
     const configString = Buffer.from(data.content, 'base64').toString()
-    console.log(configString)
     const config = new Config(configString)
     const needInfo = new NeedInfo(config, octokit)
 
-    needInfo.check()
+    needInfo.verify()
   } catch (e) {
     if (e instanceof Error) {
       core.setFailed(e.message)
