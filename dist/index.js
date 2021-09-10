@@ -25,15 +25,10 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-/* eslint-disable @typescript-eslint/no-explicit-any */
 const yaml = __importStar(__nccwpck_require__(1917));
-const fs_1 = __importDefault(__nccwpck_require__(5747));
 class Config {
-    constructor(configPath) {
+    constructor(content) {
         this.isValidRequiredItem = (item) => item !== null &&
             typeof item === 'object' &&
             'response' in item &&
@@ -44,7 +39,7 @@ class Config {
             Array.isArray(item.content)
             ? item.content.every((i) => typeof i === 'string')
             : false;
-        const config = this.parseConfig(configPath);
+        const config = this.parseConfig(content);
         this.requiredItems = config.requiredItems;
         this.labelToAdd = config.labelToAdd;
         this.labelsToCheck = config.labelsToCheck;
@@ -64,8 +59,9 @@ class Config {
             ? obj.requiredItems.every(this.isValidRequiredItem)
             : false;
     }
-    parseConfig(path) {
-        const data = yaml.load(fs_1.default.readFileSync(path, 'utf8'));
+    parseConfig(content) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const data = yaml.load(content);
         if (this.isValidConfig(data))
             return data;
         throw new Error('Invalid configuration, ending action.');
@@ -114,15 +110,25 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(2186));
+const github = __importStar(__nccwpck_require__(5438));
 const config_1 = __importDefault(__nccwpck_require__(88));
 const need_info_1 = __importDefault(__nccwpck_require__(3527));
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const githubToken = core.getInput('github_token');
-            const configPath = core.getInput('config_path');
-            const config = new config_1.default(configPath);
-            const needInfo = new need_info_1.default(config, githubToken);
+            const path = core.getInput('config_path');
+            const octokit = github.getOctokit(githubToken);
+            const result = yield octokit.rest.repos.getContent(Object.assign(Object.assign({}, github.context.repo), { path }));
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const data = result.data;
+            if (!data.content) {
+                throw new Error('the configuration file is not found');
+            }
+            const configString = Buffer.from(data.content, 'base64').toString();
+            console.log(configString);
+            const config = new config_1.default(configString);
+            const needInfo = new need_info_1.default(config, octokit);
             needInfo.check();
         }
         catch (e) {
@@ -173,41 +179,40 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const github = __importStar(__nccwpck_require__(5438));
 class NeedInfo {
-    constructor(config, token) {
+    constructor(config, octokit) {
         this.config = config;
-        this.octokit = github.getOctokit(token);
+        this.octokit = octokit;
     }
     check() {
         return __awaiter(this, void 0, void 0, function* () {
             const { eventName, payload } = github.context;
             if (eventName === 'issues' &&
-                (payload.action === 'opened' || payload.action === 'edited')) {
-                yield this.onIssueOpen();
-            }
-            else if (eventName === 'issues' && payload.action === 'labeled') {
-                yield this.onIssueLabel();
+                (payload.action === 'edited' || payload.action === 'labeled')) {
+                yield this.onIssueEvent();
             }
             else if (eventName === 'issue_comment' &&
                 (payload.action === 'created' || payload.action === 'edited')) {
-                yield this.onIssueComment();
+                yield this.onCommentEvent();
             }
             else {
                 throw new Error(`Unsupported event "${eventName}" and/or action "${payload.action}", ending run`);
             }
         });
     }
-    /** For issue open webhooks */
-    onIssueOpen() {
+    /** For issue webhooks */
+    onIssueEvent() {
         return __awaiter(this, void 0, void 0, function* () {
             const { issue } = github.context;
-            console.log('Starting issue open event workflow');
+            console.log('Starting issue event workflow');
             const labeled = yield this.hasLabelToCheck(issue);
             if (labeled) {
                 const issueInfo = yield this.octokit.rest.issues.get(Object.assign(Object.assign({}, issue), { issue_number: issue.number }));
-                const issueBody = issueInfo.data.body;
-                if (issueBody) {
-                    const responses = this.getResponses(issueBody);
+                const { body } = issueInfo.data;
+                if (body) {
+                    const responses = this.getResponses(body);
+                    console.log(`responses: ${responses.join(', ')}`);
                     if (responses.length > 0) {
+                        console.log('Comment does not have required items, adding comment and label');
                         yield this.ensureLabelExists(this.config.labelToAdd);
                         yield this.createComment(issue, responses);
                         yield this.addLabel(issue, this.config.labelToAdd);
@@ -222,24 +227,22 @@ class NeedInfo {
             }
         });
     }
-    /** For issue label webhooks */
-    onIssueLabel() {
-        return __awaiter(this, void 0, void 0, function* () {
-            console.log('Starting issue label event workflow');
-        });
-    }
     /** For issue comment webhooks */
-    onIssueComment() {
+    onCommentEvent() {
         return __awaiter(this, void 0, void 0, function* () {
             console.log('Starting comment event workflow');
             const { payload, issue } = github.context;
             // don't run if there is no comment or if the issue doesn't have the label
             if (payload.comment && this.hasLabelToAdd(issue)) {
-                console.log('Getting comment');
-                const comment = yield this.octokit.rest.issues.getComment(Object.assign(Object.assign({}, issue), { comment_id: payload.comment.id }));
-                if (comment.data.body) {
+                console.log('Getting comment and issue');
+                const commentInfo = yield this.octokit.rest.issues.getComment(Object.assign(Object.assign({}, issue), { comment_id: payload.comment.id }));
+                const issueInfo = yield this.octokit.rest.issues.get(Object.assign(Object.assign({}, issue), { issue_number: issue.number }));
+                const { body, user } = commentInfo.data;
+                const issueUser = issueInfo.data.user;
+                if (body && user && issueUser && issueUser.login === user.login) {
                     console.log('Checking comment for required items');
-                    const responses = this.getResponses(comment.data.body);
+                    const responses = this.getResponses(body);
+                    console.log(`responses: ${responses.join(', ')}`);
                     if (responses.length) {
                         console.log('Comment contains required items, removing label');
                         this.octokit.rest.issues.removeLabel(Object.assign(Object.assign({}, issue), { issue_number: issue.number, name: this.config.labelToAdd }));
@@ -249,11 +252,11 @@ class NeedInfo {
                     }
                 }
                 else {
-                    console.log(`Comment is empty, ending run`);
+                    console.log(`The commenter is not the original poster or the comment is empty, ending run`);
                 }
             }
             else {
-                console.log(`The comment doesn't have the required label, ending run`);
+                console.log(`The comment does not have the required label, ending run`);
             }
         });
     }
@@ -274,8 +277,7 @@ class NeedInfo {
                 this.octokit.rest.issues.createLabel({
                     name,
                     owner,
-                    repo,
-                    color: '#FFFF00'
+                    repo
                 });
             }
         });
@@ -303,6 +305,7 @@ class NeedInfo {
     getResponses(post) {
         console.log('Parsing for required items');
         const inPost = (text) => post.toLowerCase().includes(text.toLowerCase());
+        console.log(JSON.stringify(this.config));
         return this.config.requiredItems
             .filter(item => (item.requireAll && !item.content.every(c => inPost(c))) ||
             (!item.requireAll && !item.content.some(c => inPost(c))))
@@ -311,7 +314,9 @@ class NeedInfo {
     createComment(issue, responses) {
         return __awaiter(this, void 0, void 0, function* () {
             console.log('Creating comment');
-            const comment = `${this.config.commentHeader}\n${responses.join('\n')}\n${this.config.commentFooter}`;
+            const comment = `${this.config.commentHeader}\n\n
+    ${responses.join('\n')}\n\n
+    ${this.config.commentFooter}`;
             yield this.octokit.rest.issues.createComment(Object.assign(Object.assign({}, issue), { issue_number: issue.number, body: comment }));
         });
     }
