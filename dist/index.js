@@ -329,9 +329,7 @@ class NeedInfo {
         return __awaiter(this, void 0, void 0, function* () {
             console.log('Creating comment');
             const { repo, owner, number } = github.context.issue;
-            const comment = `${this.config.commentHeader}\n
-    ${responses.join('\n')}\n
-    ${this.config.commentFooter}`;
+            const comment = `${this.config.commentHeader}\n${responses.join('\n')}\n${this.config.commentFooter}`;
             yield this.octokit.rest.issues.createComment({
                 owner,
                 repo,
