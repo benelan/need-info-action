@@ -5,8 +5,9 @@ import NeedInfo from './need-info'
 
 async function run(): Promise<void> {
   try {
-    const githubToken = core.getInput('github_token')
+    const githubToken = core.getInput('github_token', {required: true})
     const path = core.getInput('config_path')
+
     const octokit = github.getOctokit(githubToken)
     const result = await octokit.rest.repos.getContent({
       ...github.context.repo,
@@ -15,7 +16,7 @@ async function run(): Promise<void> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const data: any = result.data
     if (!data.content) {
-      throw new Error('the configuration file is not found')
+      throw new Error('Could not find config file, ending run')
     }
 
     const configString = Buffer.from(data.content, 'base64').toString()

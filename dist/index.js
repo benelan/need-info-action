@@ -116,14 +116,14 @@ const need_info_1 = __importDefault(__nccwpck_require__(3527));
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const githubToken = core.getInput('github_token');
+            const githubToken = core.getInput('github_token', { required: true });
             const path = core.getInput('config_path');
             const octokit = github.getOctokit(githubToken);
             const result = yield octokit.rest.repos.getContent(Object.assign(Object.assign({}, github.context.repo), { path }));
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const data = result.data;
             if (!data.content) {
-                throw new Error('the configuration file is not found');
+                throw new Error('Could not find config file, ending run');
             }
             const configString = Buffer.from(data.content, 'base64').toString();
             const config = new config_1.default(configString);
@@ -185,17 +185,17 @@ class NeedInfo {
     /** Checks the github event and action runs the appropriate workflow */
     verify() {
         return __awaiter(this, void 0, void 0, function* () {
-            const { eventName, payload } = github.context;
+            const { eventName, payload: { action } } = github.context;
             if (eventName === 'issues' &&
-                (payload.action === 'edited' || payload.action === 'labeled')) {
+                (action === 'edited' || action === 'labeled')) {
                 yield this.onIssueEvent();
             }
             else if (eventName === 'issue_comment' &&
-                (payload.action === 'created' || payload.action === 'edited')) {
+                (action === 'created' || action === 'edited')) {
                 yield this.onCommentEvent();
             }
             else {
-                throw new Error(`Unsupported event "${eventName}" and/or action "${payload.action}", ending run`);
+                throw new Error(`Unsupported event "${eventName}" and/or action "${action}", ending run`);
             }
         });
     }
@@ -203,22 +203,15 @@ class NeedInfo {
     onIssueEvent() {
         return __awaiter(this, void 0, void 0, function* () {
             console.log('Starting issue event workflow');
-            const { repo, owner, number } = github.context.issue;
-            const labeled = yield this.hasLabelToCheck();
-            if (labeled) {
-                const issueInfo = yield this.octokit.rest.issues.get({
-                    owner,
-                    repo,
-                    issue_number: number
-                });
-                const { body } = issueInfo.data;
+            // get issue info if it has a label to check
+            if (yield this.hasLabelToCheck()) {
+                const { body } = yield this.getIssueInfo();
                 if (body) {
                     const responses = this.getResponses(body);
-                    console.log(`responses: ${responses.join(', ')}`);
                     if (responses.length > 0) {
                         console.log('Comment does not have required items, adding comment and label');
-                        yield this.ensureLabelExists(this.config.labelToAdd);
                         yield this.createComment(responses);
+                        yield this.ensureLabelExists(this.config.labelToAdd);
                         yield this.addLabel(this.config.labelToAdd);
                     }
                 }
@@ -235,22 +228,18 @@ class NeedInfo {
     onCommentEvent() {
         return __awaiter(this, void 0, void 0, function* () {
             console.log('Starting comment event workflow');
-            const { payload, issue } = github.context;
             // run if there is a comment and the issue has the label
-            if (payload.comment && this.hasLabelToAdd()) {
-                console.log('Getting comment and issue');
-                const commentInfo = yield this.octokit.rest.issues.getComment(Object.assign(Object.assign({}, issue), { comment_id: payload.comment.id }));
-                const issueInfo = yield this.octokit.rest.issues.get(Object.assign(Object.assign({}, issue), { issue_number: issue.number }));
-                const { body, user } = commentInfo.data;
-                const issueUser = issueInfo.data.user;
+            if (yield this.hasLabelToAdd()) {
+                console.log('Getting comment and issue info');
+                const { body, login: commentLogin } = yield this.getCommentInfo();
+                const { login: issueLogin } = yield this.getIssueInfo();
                 // make sure the commenter is the original poster
-                if (body && user && issueUser && issueUser.login === user.login) {
+                if (body && commentLogin && issueLogin && issueLogin === commentLogin) {
                     console.log('Checking comment for required items');
                     const responses = this.getResponses(body);
-                    console.log(`responses: ${responses.join(', ')}`);
                     if (responses.length < this.config.requiredItems.length) {
                         console.log('Comment contains required items, removing label');
-                        this.octokit.rest.issues.removeLabel(Object.assign(Object.assign({}, issue), { issue_number: issue.number, name: this.config.labelToAdd }));
+                        this.removeLabel(this.config.labelToAdd);
                     }
                     else {
                         console.log('Comment does not contain required items, ending run');
@@ -263,6 +252,89 @@ class NeedInfo {
             else {
                 console.log(`The comment does not have the required label, ending run`);
             }
+        });
+    }
+    /**
+     * Checks the required items to make sure everything is there
+     * Returns the responses for all of the missing items
+     */
+    getResponses(post) {
+        console.log('Parsing for required items');
+        // does the post include a string
+        const inPost = (text) => post.toLowerCase().includes(text.toLowerCase());
+        return this.config.requiredItems
+            .filter(item => (item.requireAll && !item.content.every(c => inPost(c))) ||
+            (!item.requireAll && !item.content.some(c => inPost(c))))
+            .map(item => item.response);
+    }
+    /**------------------- ISSUE/COMMENT METHODS -------------------*/
+    /** Get the body and username of a comment */
+    getIssueInfo() {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { repo, owner, number: issue_number } = github.context.issue;
+            const { data: { body, user } } = yield this.octokit.rest.issues.get({
+                owner,
+                repo,
+                issue_number
+            });
+            return { body, login: user === null || user === void 0 ? void 0 : user.login };
+        });
+    }
+    /** Get the body and username of a comment */
+    getCommentInfo() {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { payload: { comment }, issue: { owner, repo } } = github.context;
+            if (comment) {
+                const { data: { body, user } } = yield this.octokit.rest.issues.getComment({
+                    owner,
+                    repo,
+                    comment_id: comment.id
+                });
+                return { body, login: user === null || user === void 0 ? void 0 : user.login };
+            }
+            throw new Error('Issue retrieving comment, ending run');
+        });
+    }
+    /** Creates an issue comment with the responses */
+    createComment(responses) {
+        return __awaiter(this, void 0, void 0, function* () {
+            console.log('Creating comment');
+            const { repo, owner, number: issue_number } = github.context.issue;
+            // the comment header/footer and the responses
+            const body = `${this.config.commentHeader}\n\n${responses.join('\n')}\n\n${this.config.commentFooter}`;
+            yield this.octokit.rest.issues.createComment({
+                owner,
+                repo,
+                issue_number,
+                body
+            });
+        });
+    }
+    /**------------------- LABEL METHODS -------------------*/
+    /** Adds a label to an issue */
+    addLabel(label) {
+        return __awaiter(this, void 0, void 0, function* () {
+            console.log('Adding label');
+            const { repo, owner, number: issue_number } = github.context.issue;
+            this.octokit.rest.issues.addLabels({
+                owner,
+                repo,
+                issue_number,
+                labels: [label]
+            });
+        });
+    }
+    /** Removes a label to an issue */
+    removeLabel(name) {
+        return __awaiter(this, void 0, void 0, function* () {
+            console.log('Adding label');
+            const { repo, owner, number: issue_number } = github.context.issue;
+            this.octokit.rest.issues.removeLabel({
+                owner,
+                repo,
+                issue_number,
+                name
+            });
         });
     }
     /** If the label doesn't exist then create it */
@@ -291,11 +363,11 @@ class NeedInfo {
     hasLabelToAdd() {
         return __awaiter(this, void 0, void 0, function* () {
             console.log('Checking if the issue has the labelToAdd');
-            const { repo, owner, number } = github.context.issue;
+            const { repo, owner, number: issue_number } = github.context.issue;
             const labels = yield this.octokit.rest.issues.listLabelsOnIssue({
                 owner,
                 repo,
-                issue_number: number
+                issue_number
             });
             return labels.data.map(label => label.name).includes(this.config.labelToAdd);
         });
@@ -304,50 +376,13 @@ class NeedInfo {
     hasLabelToCheck() {
         return __awaiter(this, void 0, void 0, function* () {
             console.log('Checking if the issue has a labelToCheck');
-            const { repo, owner, number } = github.context.issue;
+            const { repo, owner, number: issue_number } = github.context.issue;
             const labels = yield this.octokit.rest.issues.listLabelsOnIssue({
                 owner,
                 repo,
-                issue_number: number
+                issue_number
             });
             return this.config.labelsToCheck.some(l => labels.data.map(label => label.name).includes(l));
-        });
-    }
-    /**
-     * Checks the required items to make sure everything is there
-     * Returns the responses for all of the missing items
-     */
-    getResponses(post) {
-        console.log('Parsing for required items');
-        const inPost = (text) => post.toLowerCase().includes(text.toLowerCase());
-        return this.config.requiredItems
-            .filter(item => (item.requireAll && !item.content.every(c => inPost(c))) ||
-            (!item.requireAll && !item.content.some(c => inPost(c))))
-            .map(item => item.response);
-    }
-    createComment(responses) {
-        return __awaiter(this, void 0, void 0, function* () {
-            console.log('Creating comment');
-            const { repo, owner, number } = github.context.issue;
-            const comment = `${this.config.commentHeader}\n\n${responses.join('\n')}\n\n${this.config.commentFooter}`;
-            yield this.octokit.rest.issues.createComment({
-                owner,
-                repo,
-                issue_number: number,
-                body: comment
-            });
-        });
-    }
-    addLabel(label) {
-        return __awaiter(this, void 0, void 0, function* () {
-            console.log('Adding label');
-            const { repo, owner, number } = github.context.issue;
-            this.octokit.rest.issues.addLabels({
-                owner,
-                repo,
-                issue_number: number,
-                labels: [label]
-            });
         });
     }
 }
