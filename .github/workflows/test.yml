@@ -1,7 +1,7 @@
-name: 'Verify Info'
+name: 'Issue Info'
 on:
   issues:
-    types: [opened, edited, labeled]
+    types: [edited, labeled]
     branches: [master]
   issue_comment:
     types: [created, edited]
