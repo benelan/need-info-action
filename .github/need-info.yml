@@ -1,17 +1,16 @@
 labelToAdd: 'need more info'
 labelsToCheck:
   - bug
-commentHeader: 'This is being marked as need info for the following reasons:'
-commentFooter: 'Please comment with items above, or the issue will be closed in a week'
+commentHeader: 'More information is required to proceed with this issue. Please comment with items below, or the issue will be closed in a week.'
 requiredItems:
   -
-    response: '  - Use the issue template for bugs'
+    response: '- The information requested in the bug issue template'
     requireAll: true
     content:
       - '## Actual Behavior'
       - '## Expected Behavior'
   -
-    response: '  - Include a sample that reproduces the issue'
+    response: '- A sample that reproduces the issue'
     requireAll: false
     content:
       - jsbin.com

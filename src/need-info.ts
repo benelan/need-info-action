@@ -173,8 +173,8 @@ export default class NeedInfo {
 
   async createComment(issue: Issue, responses: string[]): Promise<void> {
     console.log('Creating comment')
-    const comment = `${this.config.commentHeader}<br>
-    ${responses.join('\n')}<br>
+    const comment = `${this.config.commentHeader}\n
+    ${responses.join('\n')}\n
     ${this.config.commentFooter}`
     await this.octokit.rest.issues.createComment({
       ...issue,
