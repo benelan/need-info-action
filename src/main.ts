@@ -1,16 +1,16 @@
-import * as core from '@actions/core'
-import * as github from '@actions/github'
+import {context, getOctokit} from '@actions/github'
+import {getInput, setFailed} from '@actions/core'
 import Config from './config'
 import NeedInfo from './need-info'
 
 async function run(): Promise<void> {
   try {
-    const token = core.getInput('repo-token')
-    const path = core.getInput('config-path')
+    const token = getInput('repo-token')
+    const path = getInput('config-path')
 
-    const octokit = github.getOctokit(token)
+    const octokit = getOctokit(token)
     const configFile = await octokit.rest.repos.getContent({
-      ...github.context.repo,
+      ...context.repo,
       path
     })
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -26,7 +26,7 @@ async function run(): Promise<void> {
     needInfo.verify()
   } catch (e) {
     if (e instanceof Error) {
-      core.setFailed(e.message)
+      setFailed(e.message)
     }
   }
 }

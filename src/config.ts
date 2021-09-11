@@ -1,4 +1,4 @@
-import * as yaml from 'js-yaml'
+import {load} from 'js-yaml'
 
 export interface RequiredItem {
   content: string[]
@@ -49,7 +49,7 @@ export default class Config {
 
   parseConfig(content: string): Config {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const data: any = yaml.load(content)
+    const data: any = load(content)
     if (this.isValidConfig(data)) return data
     throw new Error('Invalid configuration, ending action')
   }

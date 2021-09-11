@@ -98,7 +98,7 @@ The comment event can be run on `created` and/or `edited` actions.
 This Action can be used in conjunction with the [Close Stale Issues](https://github.com/marketplace/actions/close-stale-issues) Action which can be set up to delete issues with the `labelToAdd` after a certain amount of time.
 
 ### Example
-```yml
+```yaml
 # .github/workflows/close-issue.yml
 name: 'Need Info'
 on:
@@ -110,10 +110,9 @@ jobs:
     steps:
       - uses: actions/stale@v3
         with:
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-          days-before-stale: -1
+          days-before-stale: -1 # do not automatically label issues
           days-before-close: 7
-          remove-stale-when-updated: false
+          remove-stale-when-updated: false # won't remove label
           stale-issue-label: 'need more info'
           stale-pr-label: 'need more info'
           close-issue-message: 'This issue has been automatically closed due to missing information. We will reopen the issue if the information is provided.'

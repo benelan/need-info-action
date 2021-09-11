@@ -1,6 +1,6 @@
-import * as github from '@actions/github'
 import Config from './config'
 import {GitHub} from '@actions/github/lib/utils'
+import {context} from '@actions/github'
 
 /** Username and text body of an issue/comment */
 interface PostInfo {
@@ -22,7 +22,7 @@ export default class NeedInfo {
     const {
       eventName,
       payload: {action}
-    } = github.context
+    } = context
 
     if (
       eventName === 'issues' &&
@@ -121,7 +121,7 @@ export default class NeedInfo {
 
   /** Get the text body and username of an issue */
   async getIssueInfo(): Promise<PostInfo> {
-    const {repo, owner, number: issue_number} = github.context.issue
+    const {repo, owner, number: issue_number} = context.issue
     const {
       data: {body, user}
     } = await this.octokit.rest.issues.get({
@@ -138,7 +138,7 @@ export default class NeedInfo {
     const {
       payload: {comment},
       issue: {owner, repo}
-    } = github.context
+    } = context
 
     if (comment) {
       const {
@@ -157,7 +157,7 @@ export default class NeedInfo {
   /** Creates a comment with the responses for the missing items */
   async createComment(responses: string[]): Promise<void> {
     console.log('Creating comment')
-    const {repo, owner, number: issue_number} = github.context.issue
+    const {repo, owner, number: issue_number} = context.issue
 
     // the comment header/footer and the responses
     const body = `${this.config.commentHeader}\n\n${responses.join('\n')}\n\n${
@@ -177,7 +177,7 @@ export default class NeedInfo {
   /** Adds a label to an issue */
   async addLabel(label: string): Promise<void> {
     console.log('Adding label')
-    const {repo, owner, number: issue_number} = github.context.issue
+    const {repo, owner, number: issue_number} = context.issue
     this.octokit.rest.issues.addLabels({
       owner,
       repo,
@@ -189,7 +189,7 @@ export default class NeedInfo {
   /** Removes a label to an issue */
   async removeLabel(name: string): Promise<void> {
     console.log('Removing label')
-    const {repo, owner, number: issue_number} = github.context.issue
+    const {repo, owner, number: issue_number} = context.issue
     this.octokit.rest.issues.removeLabel({
       owner,
       repo,
@@ -200,7 +200,7 @@ export default class NeedInfo {
 
   /** Creates a label if it does not exist */
   async ensureLabelExists(name: string): Promise<void> {
-    const {repo} = github.context
+    const {repo} = context
     try {
       console.log('checking if a label exists')
       await this.octokit.rest.issues.getLabel({
@@ -219,7 +219,7 @@ export default class NeedInfo {
   /** Checks if an issue has the labelToAdd */
   async hasLabelToAdd(): Promise<boolean> {
     console.log('Checking if the issue has the required label')
-    const {repo, owner, number: issue_number} = github.context.issue
+    const {repo, owner, number: issue_number} = context.issue
     const labels = await this.octokit.rest.issues.listLabelsOnIssue({
       owner,
       repo,
@@ -231,7 +231,7 @@ export default class NeedInfo {
   /** Checks if an issue has at least one labelToCheck */
   async hasLabelToCheck(): Promise<boolean> {
     console.log('Checking if the issue has one of the labels to check')
-    const {repo, owner, number: issue_number} = github.context.issue
+    const {repo, owner, number: issue_number} = context.issue
     const labels = await this.octokit.rest.issues.listLabelsOnIssue({
       owner,
       repo,

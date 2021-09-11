@@ -2,31 +2,12 @@ require('./sourcemap-register.js');/******/ (() => { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({
 
 /***/ 88:
-/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 "use strict";
 
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-const yaml = __importStar(__nccwpck_require__(1917));
+const js_yaml_1 = __nccwpck_require__(1917);
 class Config {
     constructor(content) {
         this.isValidRequiredItem = (item) => item !== null &&
@@ -60,7 +41,7 @@ class Config {
     }
     parseConfig(content) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const data = yaml.load(content);
+        const data = (0, js_yaml_1.load)(content);
         if (this.isValidConfig(data))
             return data;
         throw new Error('Invalid configuration, ending action');
@@ -76,25 +57,6 @@ exports.default = Config;
 
 "use strict";
 
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -108,17 +70,17 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-const core = __importStar(__nccwpck_require__(2186));
-const github = __importStar(__nccwpck_require__(5438));
+const github_1 = __nccwpck_require__(5438);
+const core_1 = __nccwpck_require__(2186);
 const config_1 = __importDefault(__nccwpck_require__(88));
 const need_info_1 = __importDefault(__nccwpck_require__(3527));
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const token = core.getInput('repo-token');
-            const path = core.getInput('config-path');
-            const octokit = github.getOctokit(token);
-            const configFile = yield octokit.rest.repos.getContent(Object.assign(Object.assign({}, github.context.repo), { path }));
+            const token = (0, core_1.getInput)('repo-token');
+            const path = (0, core_1.getInput)('config-path');
+            const octokit = (0, github_1.getOctokit)(token);
+            const configFile = yield octokit.rest.repos.getContent(Object.assign(Object.assign({}, github_1.context.repo), { path }));
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const data = configFile.data;
             if (!data.content) {
@@ -131,7 +93,7 @@ function run() {
         }
         catch (e) {
             if (e instanceof Error) {
-                core.setFailed(e.message);
+                (0, core_1.setFailed)(e.message);
             }
         }
     });
@@ -146,25 +108,6 @@ run();
 
 "use strict";
 
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -175,7 +118,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-const github = __importStar(__nccwpck_require__(5438));
+const github_1 = __nccwpck_require__(5438);
 class NeedInfo {
     constructor(config, octokit) {
         this.config = config;
@@ -184,7 +127,7 @@ class NeedInfo {
     /** Checks the github event/action and uses the appropriate workflow */
     verify() {
         return __awaiter(this, void 0, void 0, function* () {
-            const { eventName, payload: { action } } = github.context;
+            const { eventName, payload: { action } } = github_1.context;
             if (eventName === 'issues' &&
                 (action === 'opened' || action === 'edited' || action === 'labeled')) {
                 yield this.onIssueEvent();
@@ -268,7 +211,7 @@ class NeedInfo {
     /** Get the text body and username of an issue */
     getIssueInfo() {
         return __awaiter(this, void 0, void 0, function* () {
-            const { repo, owner, number: issue_number } = github.context.issue;
+            const { repo, owner, number: issue_number } = github_1.context.issue;
             const { data: { body, user } } = yield this.octokit.rest.issues.get({
                 owner,
                 repo,
@@ -280,7 +223,7 @@ class NeedInfo {
     /** Get the text body and username of a comment */
     getCommentInfo() {
         return __awaiter(this, void 0, void 0, function* () {
-            const { payload: { comment }, issue: { owner, repo } } = github.context;
+            const { payload: { comment }, issue: { owner, repo } } = github_1.context;
             if (comment) {
                 const { data: { body, user } } = yield this.octokit.rest.issues.getComment({
                     owner,
@@ -296,7 +239,7 @@ class NeedInfo {
     createComment(responses) {
         return __awaiter(this, void 0, void 0, function* () {
             console.log('Creating comment');
-            const { repo, owner, number: issue_number } = github.context.issue;
+            const { repo, owner, number: issue_number } = github_1.context.issue;
             // the comment header/footer and the responses
             const body = `${this.config.commentHeader}\n\n${responses.join('\n')}\n\n${this.config.commentFooter}`;
             yield this.octokit.rest.issues.createComment({
@@ -312,7 +255,7 @@ class NeedInfo {
     addLabel(label) {
         return __awaiter(this, void 0, void 0, function* () {
             console.log('Adding label');
-            const { repo, owner, number: issue_number } = github.context.issue;
+            const { repo, owner, number: issue_number } = github_1.context.issue;
             this.octokit.rest.issues.addLabels({
                 owner,
                 repo,
@@ -325,7 +268,7 @@ class NeedInfo {
     removeLabel(name) {
         return __awaiter(this, void 0, void 0, function* () {
             console.log('Removing label');
-            const { repo, owner, number: issue_number } = github.context.issue;
+            const { repo, owner, number: issue_number } = github_1.context.issue;
             this.octokit.rest.issues.removeLabel({
                 owner,
                 repo,
@@ -337,7 +280,7 @@ class NeedInfo {
     /** Creates a label if it does not exist */
     ensureLabelExists(name) {
         return __awaiter(this, void 0, void 0, function* () {
-            const { repo } = github.context;
+            const { repo } = github_1.context;
             try {
                 console.log('checking if a label exists');
                 yield this.octokit.rest.issues.getLabel(Object.assign(Object.assign({}, repo), { name }));
@@ -352,7 +295,7 @@ class NeedInfo {
     hasLabelToAdd() {
         return __awaiter(this, void 0, void 0, function* () {
             console.log('Checking if the issue has the required label');
-            const { repo, owner, number: issue_number } = github.context.issue;
+            const { repo, owner, number: issue_number } = github_1.context.issue;
             const labels = yield this.octokit.rest.issues.listLabelsOnIssue({
                 owner,
                 repo,
@@ -365,7 +308,7 @@ class NeedInfo {
     hasLabelToCheck() {
         return __awaiter(this, void 0, void 0, function* () {
             console.log('Checking if the issue has one of the labels to check');
-            const { repo, owner, number: issue_number } = github.context.issue;
+            const { repo, owner, number: issue_number } = github_1.context.issue;
             const labels = yield this.octokit.rest.issues.listLabelsOnIssue({
                 owner,
                 repo,
