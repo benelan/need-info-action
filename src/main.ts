@@ -9,14 +9,14 @@ async function run(): Promise<void> {
     const path = core.getInput('config_path')
 
     const octokit = github.getOctokit(githubToken)
-    const result = await octokit.rest.repos.getContent({
+    const configFile = await octokit.rest.repos.getContent({
       ...github.context.repo,
       path
     })
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const data: any = result.data
+    const data: any = configFile.data
     if (!data.content) {
-      throw new Error('Could not find config file, ending run')
+      throw new Error('Configuration file not found, ending run')
     }
 
     const configString = Buffer.from(data.content, 'base64').toString()

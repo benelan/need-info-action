@@ -43,7 +43,6 @@ class Config {
         this.requiredItems = config.requiredItems;
         this.labelToAdd = config.labelToAdd;
         this.labelsToCheck = config.labelsToCheck;
-        this.exemptUsers = config.exemptUsers || [];
         this.commentFooter = config.commentFooter || '';
         this.commentHeader = config.commentHeader || '';
     }
@@ -64,7 +63,7 @@ class Config {
         const data = yaml.load(content);
         if (this.isValidConfig(data))
             return data;
-        throw new Error('Invalid configuration, ending action.');
+        throw new Error('Invalid configuration, ending action');
     }
 }
 exports.default = Config;
@@ -119,11 +118,11 @@ function run() {
             const githubToken = core.getInput('github_token', { required: true });
             const path = core.getInput('config_path');
             const octokit = github.getOctokit(githubToken);
-            const result = yield octokit.rest.repos.getContent(Object.assign(Object.assign({}, github.context.repo), { path }));
+            const configFile = yield octokit.rest.repos.getContent(Object.assign(Object.assign({}, github.context.repo), { path }));
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const data = result.data;
+            const data = configFile.data;
             if (!data.content) {
-                throw new Error('Could not find config file, ending run');
+                throw new Error('Configuration file not found, ending run');
             }
             const configString = Buffer.from(data.content, 'base64').toString();
             const config = new config_1.default(configString);
@@ -182,7 +181,7 @@ class NeedInfo {
         this.config = config;
         this.octokit = octokit;
     }
-    /** Checks the github event and action runs the appropriate workflow */
+    /** Checks the github event/action and uses the appropriate workflow */
     verify() {
         return __awaiter(this, void 0, void 0, function* () {
             const { eventName, payload: { action } } = github.context;
@@ -199,17 +198,16 @@ class NeedInfo {
             }
         });
     }
-    /** For issue webhooks */
+    /** issue webhooks */
     onIssueEvent() {
         return __awaiter(this, void 0, void 0, function* () {
             console.log('Starting issue event workflow');
-            // get issue info if it has a label to check
             if (yield this.hasLabelToCheck()) {
                 const { body } = yield this.getIssueInfo();
                 if (body) {
-                    const responses = this.getResponses(body);
+                    const responses = this.getNeedInfoResponses(body);
                     if (responses.length > 0) {
-                        console.log('Comment does not have required items, adding comment and label');
+                        console.log('Issue does not have all required items, adding comment and label');
                         yield this.createComment(responses);
                         yield this.ensureLabelExists(this.config.labelToAdd);
                         yield this.addLabel(this.config.labelToAdd);
@@ -228,7 +226,6 @@ class NeedInfo {
     onCommentEvent() {
         return __awaiter(this, void 0, void 0, function* () {
             console.log('Starting comment event workflow');
-            // run if there is a comment and the issue has the label
             if (yield this.hasLabelToAdd()) {
                 console.log('Getting comment and issue info');
                 const { body, login: commentLogin } = yield this.getCommentInfo();
@@ -236,13 +233,13 @@ class NeedInfo {
                 // make sure the commenter is the original poster
                 if (body && commentLogin && issueLogin && issueLogin === commentLogin) {
                     console.log('Checking comment for required items');
-                    const responses = this.getResponses(body);
+                    const responses = this.getNeedInfoResponses(body);
                     if (responses.length < this.config.requiredItems.length) {
-                        console.log('Comment contains required items, removing label');
+                        console.log('Comment contains at least one required item, removing label');
                         this.removeLabel(this.config.labelToAdd);
                     }
                     else {
-                        console.log('Comment does not contain required items, ending run');
+                        console.log('Comment does not contain any required items, ending run');
                     }
                 }
                 else {
@@ -258,7 +255,7 @@ class NeedInfo {
      * Checks the required items to make sure everything is there
      * Returns the responses for all of the missing items
      */
-    getResponses(post) {
+    getNeedInfoResponses(post) {
         console.log('Parsing for required items');
         // does the post include a string
         const inPost = (text) => post.toLowerCase().includes(text.toLowerCase());
@@ -268,7 +265,7 @@ class NeedInfo {
             .map(item => item.response);
     }
     /**------------------- ISSUE/COMMENT METHODS -------------------*/
-    /** Get the body and username of a comment */
+    /** Get the text body and username of an issue */
     getIssueInfo() {
         return __awaiter(this, void 0, void 0, function* () {
             const { repo, owner, number: issue_number } = github.context.issue;
@@ -280,7 +277,7 @@ class NeedInfo {
             return { body, login: user === null || user === void 0 ? void 0 : user.login };
         });
     }
-    /** Get the body and username of a comment */
+    /** Get the text body and username of a comment */
     getCommentInfo() {
         return __awaiter(this, void 0, void 0, function* () {
             const { payload: { comment }, issue: { owner, repo } } = github.context;
@@ -292,10 +289,10 @@ class NeedInfo {
                 });
                 return { body, login: user === null || user === void 0 ? void 0 : user.login };
             }
-            throw new Error('Issue retrieving comment, ending run');
+            throw new Error('Error retrieving comment, ending run');
         });
     }
-    /** Creates an issue comment with the responses */
+    /** Creates a comment with the responses for the missing items */
     createComment(responses) {
         return __awaiter(this, void 0, void 0, function* () {
             console.log('Creating comment');
@@ -327,7 +324,7 @@ class NeedInfo {
     /** Removes a label to an issue */
     removeLabel(name) {
         return __awaiter(this, void 0, void 0, function* () {
-            console.log('Adding label');
+            console.log('Removing label');
             const { repo, owner, number: issue_number } = github.context.issue;
             this.octokit.rest.issues.removeLabel({
                 owner,
@@ -337,32 +334,24 @@ class NeedInfo {
             });
         });
     }
-    /** If the label doesn't exist then create it */
+    /** Creates a label if it does not exist */
     ensureLabelExists(name) {
         return __awaiter(this, void 0, void 0, function* () {
-            const { repo, owner } = github.context.repo;
+            const { repo } = github.context;
             try {
-                console.log('checking if labelToAdd exists');
-                yield this.octokit.rest.issues.getLabel({
-                    name,
-                    owner,
-                    repo
-                });
+                console.log('checking if a label exists');
+                yield this.octokit.rest.issues.getLabel(Object.assign(Object.assign({}, repo), { name }));
             }
             catch (e) {
-                console.log('creating labelToAdd');
-                this.octokit.rest.issues.createLabel({
-                    name,
-                    owner,
-                    repo
-                });
+                console.log('Label did not exist, creating it now');
+                this.octokit.rest.issues.createLabel(Object.assign(Object.assign({}, repo), { name }));
             }
         });
     }
     /** Checks if an issue has the labelToAdd */
     hasLabelToAdd() {
         return __awaiter(this, void 0, void 0, function* () {
-            console.log('Checking if the issue has the labelToAdd');
+            console.log('Checking if the issue has the required label');
             const { repo, owner, number: issue_number } = github.context.issue;
             const labels = yield this.octokit.rest.issues.listLabelsOnIssue({
                 owner,
@@ -375,7 +364,7 @@ class NeedInfo {
     /** Checks if an issue has at least one labelToCheck */
     hasLabelToCheck() {
         return __awaiter(this, void 0, void 0, function* () {
-            console.log('Checking if the issue has a labelToCheck');
+            console.log('Checking if the issue has one of the labels to check');
             const { repo, owner, number: issue_number } = github.context.issue;
             const labels = yield this.octokit.rest.issues.listLabelsOnIssue({
                 owner,

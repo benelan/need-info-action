@@ -12,14 +12,12 @@ export default class Config {
   commentFooter: string
   labelToAdd: string
   labelsToCheck: string[]
-  exemptUsers: string[]
 
   constructor(content: string) {
     const config = this.parseConfig(content)
     this.requiredItems = config.requiredItems
     this.labelToAdd = config.labelToAdd
     this.labelsToCheck = config.labelsToCheck
-    this.exemptUsers = config.exemptUsers || []
     this.commentFooter = config.commentFooter || ''
     this.commentHeader = config.commentHeader || ''
   }
@@ -53,6 +51,6 @@ export default class Config {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const data: any = yaml.load(content)
     if (this.isValidConfig(data)) return data
-    throw new Error('Invalid configuration, ending action.')
+    throw new Error('Invalid configuration, ending action')
   }
 }

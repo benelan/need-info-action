@@ -1,11 +1,11 @@
 labelToAdd: 'need more info'
 labelsToCheck:
   - bug
-commentHeader: 'More information is required to proceed with this issue:'
+commentHeader: 'More information is required to proceed:'
 commentFooter: 'This issue will be automatically closed in a week if the information is not provided. Thanks for your understanding.'
 requiredItems:
   -
-    response: '- Use the issue template for bugs'
+    response: '- Use the format from the issue template for bugs'
     requireAll: true
     content:
       - '## Actual Behavior'
