@@ -26,7 +26,7 @@ export default class NeedInfo {
 
     if (
       eventName === 'issues' &&
-      (action === 'edited' || action === 'labeled')
+      (action === 'opened' || action === 'edited' || action === 'labeled')
     ) {
       await this.onIssueEvent()
     } else if (

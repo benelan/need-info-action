@@ -186,7 +186,7 @@ class NeedInfo {
         return __awaiter(this, void 0, void 0, function* () {
             const { eventName, payload: { action } } = github.context;
             if (eventName === 'issues' &&
-                (action === 'edited' || action === 'labeled')) {
+                (action === 'opened' || action === 'edited' || action === 'labeled')) {
                 yield this.onIssueEvent();
             }
             else if (eventName === 'issue_comment' &&
