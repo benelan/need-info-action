@@ -9,7 +9,7 @@ The default path to the configuration file is `.github/need-info.yml`. The path 
 ### Example Workflow File
 ```yaml
 # .github/workflows/verify-info.yml
-name: 'Issue Info'
+name: "Issue Info"
 on:
   issues:
     types: [opened, edited, labeled]
@@ -24,51 +24,51 @@ jobs:
       - uses: benelan/need-info-action@v1.0.0
         with:
           github_token: "${{ secrets.GITHUB_TOKEN }}"
-          config_path: '.github/configs/not-default.yml' # not required if using the default path
+          config_path: ".github/configs/not-default.yml" # not required if using the default path
 ```
 The following properties can be set in the configuration file.
 
-| Config Property                 | Type           | Description                                                                                     |
-|--------------------------|----------------|-------------------------------------------------------------------------------------------------|
-| labelToAdd _(required)_    | string         | The label that will be added to issues with missing information                                 |
-| labelsToCheck _(required)_ | string[]       | If one of the labels in this list is present then the issue will be checked for required items  |
-| requiredItems _(required)_ | RequiredItem[] | A list of required items that an issue with a labelToCheck must include                         |
-| commentHeader            | string         | Text to display in a comment above the required item responses when content is missing          |
-| commentFooter            | string         | Text to display in a comment below the required item responses when content is missing          |
+| Config Property            | Type           | Description                                          |
+|----------------------------|----------------|------------------------------------------------------|
+| labelToAdd _(required)_    | string         | Label added to issues with missing information       |
+| labelsToCheck _(required)_ | string[]       | Labels that trigger a check for required information |
+| requiredItems _(required)_ | RequiredItem[] | Items that an issue with a labelToCheck must include |
+| commentHeader              | string         | Message above the missing content responses          |
+| commentFooter              | string         | Message below the missing content responses          |
 
 
 
-| RequiredItem Property   | Type     | Description                                               |
-|------------|----------|-----------------------------------------------------------|
-| content _(required)_    | string[] | A list of required content in an issue or comment         |
-| response _(required)_   | string   | The comment response to provide if the content is missing |
-| requireAll _(required)_ | boolean  | Require all the content items or just one                 |
+| Required Item Property  | Type     | Description                                                   |
+|-------------------------|----------|---------------------------------------------------------------|
+| content _(required)_    | string[] | A list of content that is required in an issue or comment     |
+| response _(required)_   | string   | A response to comment on an issue if the content is missing   |
+| requireAll _(required)_ | boolean  | Whether to require all of the content items or just one       |
 
 
 ### Example Config File
  ```yaml
  # .github/need-info.yml
-labelToAdd: 'need more info'
+labelToAdd: "need more info"
 labelsToCheck:
-  - bug
-  - enhancement
-commentHeader: 'More information is required to proceed:'
+  - "bug"
+  - "enhancement"
+commentHeader: "More information is required to proceed:"
 requiredItems:
   -
-    response: '- Use the appropriate format from the issue templates'
+    response: "- Use the appropriate format from the issue templates"
     requireAll: true
     content:
-      - '## Actual Behavior'
-      - '## Expected Behavior'
+      - "## Actual Behavior"
+      - "## Expected Behavior"
   -
-    response: '- A sample that reproduces the issue'
+    response: "- A sample that reproduces the issue"
     requireAll: false
     content:
-      - jsbin.com
-      - codepen.io
-      - jsfiddle.net
-      - codesandbox.io
-commentFooter: 'This issue will be automatically closed in a week if the information is not provided. Thanks for your understanding.'
+      - "jsbin.com"
+      - "codepen.io"
+      - "jsfiddle.net"
+      - "codesandbox.io"
+commentFooter: "This issue will be automatically closed in a week if the information is not provided. Thanks for your understanding."
  ```
 
 ## How It Works
