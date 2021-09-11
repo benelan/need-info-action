@@ -3,16 +3,18 @@
  A GitHub Action that requests more info when required content is not included in an issue.
 
  ## Configuration
-The default path to the configuration file is `.github/need-info.yml`. The path can be changed when setting up the workflow.
+The Action has two properties that have defaults and are not required.
+- __config-path__: Path to the config file, defaults to `.github/need-info.yml`
+- __repo-token__: Token for the repository, defaults to  `${{ github.token }}`
 
 
 ### Example Workflow File
 ```yaml
 # .github/workflows/verify-info.yml
-name: "Issue Info"
+name: 'Issue Info'
 on:
   issues:
-    types: [opened, edited, labeled]
+    types: [opened, edited, labeled] # can pick and choose types
     branches: [master]
   issue_comment:
     types: [created, edited]
@@ -22,9 +24,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: benelan/need-info-action@v1.0.0
+        # the rest is not required if using the defaults
         with:
-          github_token: "${{ secrets.GITHUB_TOKEN }}"
-          config_path: ".github/configs/not-default.yml" # not required if using the default path
+          github-token: 'super-duper-secret-token-sshhh'
+          config-path: '.github/configs/not-default.yml'
 ```
 The following properties can be set in the configuration file.
 
@@ -48,27 +51,27 @@ The following properties can be set in the configuration file.
 ### Example Config File
  ```yaml
  # .github/need-info.yml
-labelToAdd: "need more info"
+labelToAdd: 'need more info'
 labelsToCheck:
-  - "bug"
-  - "enhancement"
-commentHeader: "More information is required to proceed:"
+  - 'bug'
+  - 'enhancement'
+commentHeader: 'More information is required to proceed:'
 requiredItems:
   -
-    response: "- Use the appropriate format from the issue templates"
+    response: '- Use the appropriate format from the issue templates'
     requireAll: true
     content:
-      - "## Actual Behavior"
-      - "## Expected Behavior"
+      - '## Actual Behavior'
+      - '## Expected Behavior'
   -
-    response: "- A sample that reproduces the issue"
+    response: '- A sample that reproduces the issue'
     requireAll: false
     content:
-      - "jsbin.com"
-      - "codepen.io"
-      - "jsfiddle.net"
-      - "codesandbox.io"
-commentFooter: "This issue will be automatically closed in a week if the information is not provided. Thanks for your understanding."
+      - 'jsbin.com'
+      - 'codepen.io'
+      - 'jsfiddle.net'
+      - 'codesandbox.io'
+commentFooter: 'This issue will be automatically closed in a week if the information is not provided. Thanks for your understanding.'
  ```
 
 ## How It Works
@@ -97,10 +100,10 @@ This Action can be used in conjunction with the [Close Stale Issues](https://git
 ### Example
 ```yml
 # .github/workflows/close-issue.yml
-name: "Need Info"
+name: 'Need Info'
 on:
   schedule:
-    - cron: "30 1 * * *"
+    - cron: '30 1 * * *'
 jobs:
   close:
     runs-on: ubuntu-latest
@@ -111,7 +114,7 @@ jobs:
           days-before-stale: -1
           days-before-close: 7
           remove-stale-when-updated: false
-          stale-issue-label: "need more info"
-          stale-pr-label: "need more info"
-          close-issue-message: "This issue has been automatically closed due to missing information. We will reopen the issue if the information is provided."
+          stale-issue-label: 'need more info'
+          stale-pr-label: 'need more info'
+          close-issue-message: 'This issue has been automatically closed due to missing information. We will reopen the issue if the information is provided.'
 ```

@@ -5,10 +5,10 @@ import NeedInfo from './need-info'
 
 async function run(): Promise<void> {
   try {
-    const githubToken = core.getInput('github_token', {required: true})
-    const path = core.getInput('config_path')
+    const token = core.getInput('repo-token')
+    const path = core.getInput('config-path')
 
-    const octokit = github.getOctokit(githubToken)
+    const octokit = github.getOctokit(token)
     const configFile = await octokit.rest.repos.getContent({
       ...github.context.repo,
       path

@@ -2,16 +2,17 @@ name: 'Need More Info'
 description: 'Requests more info when required content is not included in an issue'
 author: 'Ben Elan'
 inputs:
-  github_token:
-    description: 'Token for the repository. Can be passed in using {{ secrets.GITHUB_TOKEN }}'
-    required: true
-  config_path:
+  repo-token:
+    description: 'Token for the repository. Defaults to ${{ github.token }}.'
+    default: ${{ github.token }}
     required: false
-    description: 'The path to the config file. Defaults to `.github/need-info.yml`.'
+  config-path:
+    description: 'Path to the config file. Defaults to .github/need-info.yml.'
     default: '.github/need-info.yml'
+    required: false
 runs:
   using: 'node12'
   main: 'dist/index.js'
 branding:
-  icon: info
-  color: yellow
+  icon: 'info'
+  color: 'yellow'

@@ -115,9 +115,9 @@ const need_info_1 = __importDefault(__nccwpck_require__(3527));
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const githubToken = core.getInput('github_token', { required: true });
-            const path = core.getInput('config_path');
-            const octokit = github.getOctokit(githubToken);
+            const token = core.getInput('repo-token');
+            const path = core.getInput('config-path');
+            const octokit = github.getOctokit(token);
             const configFile = yield octokit.rest.repos.getContent(Object.assign(Object.assign({}, github.context.repo), { path }));
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const data = configFile.data;
