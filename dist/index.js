@@ -145,7 +145,8 @@ class NeedInfo {
     onIssueEvent() {
         return __awaiter(this, void 0, void 0, function* () {
             console.log('Starting issue event workflow');
-            if (yield this.hasLabelToCheck()) {
+            // issue has a labelToCheck and is not already marked with the labelToAdd
+            if ((yield this.hasLabelToCheck()) && !(yield this.hasLabelToAdd())) {
                 const { body } = yield this.getIssueInfo();
                 if (body) {
                     const responses = this.getNeedInfoResponses(body);

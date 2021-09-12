@@ -1,0 +1,20 @@
+labelToAdd: 'need more info'
+labelsToCheck:
+  - bug
+  - enhancement
+commentHeader: 'More information is required to proceed:'
+requiredItems:
+  -
+    response: '- Use the appropriate format from the issue templates'
+    content:
+      - '## Actual Behavior'
+      - '## Expected Behavior'
+  -
+    response: '- A sample that reproduces the issue'
+    requireAll: false
+    content:
+      - jsbin.com
+      - codepen.io
+      - jsfiddle.net
+      - codesandbox.io
+commentFooter: 'This issue will be automatically closed in a week if the information is not provided. Thanks for your understanding.'

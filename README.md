@@ -1,6 +1,6 @@
 # Need More Info
 
- A GitHub Action that requests more info when required content is not included in an issue.
+ A GitHub Action that requests more info when required content is not included in an issue. You can check out test runs [here](https://github.com/benelan/need-info-action/issues).
 
  ## Configuration
 The Action has two properties that have defaults and are not required.
@@ -33,9 +33,9 @@ The following properties can be set in the configuration file.
 
 | Config Property            | Type           | Description                                          |
 |----------------------------|----------------|------------------------------------------------------|
-| labelToAdd _(required)_    | string         | Label added to issues with missing information       |
-| labelsToCheck _(required)_ | string[]       | Labels that trigger a check for required information |
 | requiredItems _(required)_ | RequiredItem[] | Items that an issue with a labelToCheck must include |
+| labelsToCheck _(required)_ | string[]       | Labels that trigger a check for required information |
+| labelToAdd _(required)_    | string         | Label added to issues with missing information       |
 | commentHeader              | string         | Message above the missing content responses          |
 | commentFooter              | string         | Message below the missing content responses          |
 
@@ -75,18 +75,18 @@ commentFooter: 'This issue will be automatically closed in a week if the informa
  ```
 
 ## How It Works
-The appropriate workflow is determined depending on if an issue or comment event triggered the Action.
+The appropriate method is determined depending on whether the Action is triggered by an issue or comment event.
 
 ### Issue Event Webhook
-The issue event can be run on `opened`, `edited` and/or `labeled` actions. 
+The `issues` event method can be run on `opened`, `edited` and/or `labeled` actions. 
 - The Action checks if an issue has at least one of the `labelsToCheck`. If it does, it checks the issue body for the `requiredItems`.
   - If the issue satisfies all of the requirements then the Action ends.
   - If any requirement is not satisfied then `labelToAdd` is added to the issue. The Action comments on the issue with the `response` for all of the `requiredItems` that were not provided.
 - If the issue does not have any `labelsToCheck` then the Action ends.
 
 ### Comment Event Webhook
-The comment event can be run on `created` and/or `edited` actions.
-- If there is a comment on an issue with the `labelToAdd`, then the Action checks the comment for any `requiredItems`.
+The `issue_comment` event method can be run on `created` and/or `edited` actions.
+- If there is a comment on an issue with the `labelToAdd` then the Action checks the comment for any `requiredItems`.
   - If the comment satisfies any ONE required item then the `labelToAdd` is removed from the issue.
   - If the comment does not have any `requiredItems` then the Action ends.
 - If the commented issue does not have the  `labelToAdd`, or the commenter is not the original poster, then the Action ends.
@@ -95,7 +95,7 @@ The comment event can be run on `created` and/or `edited` actions.
 
 
 ## Closing Issues
-This Action can be used in conjunction with the [Close Stale Issues](https://github.com/marketplace/actions/close-stale-issues) Action which can be set up to delete issues with the `labelToAdd` after a certain amount of time.
+This Action can be used in conjunction with [Close Stale Issues](https://github.com/marketplace/actions/close-stale-issues), which can be set up to close issues with the `labelToAdd` after a certain amount of time.
 
 ### Example
 ```yaml
@@ -112,7 +112,7 @@ jobs:
         with:
           days-before-stale: -1 # do not automatically label issues
           days-before-close: 7
-          remove-stale-when-updated: false # won't remove label
+          remove-stale-when-updated: false # do not automatically remove label
           stale-issue-label: 'need more info'
           stale-pr-label: 'need more info'
           close-issue-message: 'This issue has been automatically closed due to missing information. We will reopen the issue if the information is provided.'

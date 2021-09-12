@@ -44,7 +44,8 @@ export default class NeedInfo {
   /** issue webhooks */
   private async onIssueEvent(): Promise<void> {
     console.log('Starting issue event workflow')
-    if (await this.hasLabelToCheck()) {
+    // issue has a labelToCheck and is not already marked with the labelToAdd
+    if ((await this.hasLabelToCheck()) && !(await this.hasLabelToAdd())) {
       const {body} = await this.getIssueInfo()
 
       if (body) {
