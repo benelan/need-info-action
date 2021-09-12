@@ -3,8 +3,8 @@ description: 'Requests more info when required content is not included in an iss
 author: 'Ben Elan'
 inputs:
   repo-token:
-    description: 'Token for the repository. Defaults to {{ secrets.GITHUB_TOKEN }}.'
-    default: {{ secrets.GITHUB_TOKEN }}
+    description: 'Token for the repository. Defaults to ${{ secrets.GITHUB_TOKEN }}.'
+    default: ${{ secrets.GITHUB_TOKEN }}
     required: false
   config-path:
     description: 'Path to the config file. Defaults to .github/need-info.yml.'

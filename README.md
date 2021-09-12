@@ -5,7 +5,7 @@
  ## Configuration
 The Action has two properties that have defaults and are not required.
 - __config-path__: Path to the config file, defaults to `.github/need-info.yml`
-- __repo-token__: Token for the repository, defaults to  `{{ secrets.GITHUB_TOKEN }}`
+- __repo-token__: Token for the repository, defaults to  `${{ secrets.GITHUB_TOKEN }}`
 
 
 ### Example Workflow File
