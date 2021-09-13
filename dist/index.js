@@ -169,7 +169,7 @@ class NeedInfo {
             }
         });
     }
-    /** For issue comment webhooks */
+    /** issue comment webhooks */
     onCommentEvent() {
         return __awaiter(this, void 0, void 0, function* () {
             console.log('Starting comment event workflow');

@@ -71,7 +71,7 @@ export default class NeedInfo {
     }
   }
 
-  /** For issue comment webhooks */
+  /** issue comment webhooks */
   private async onCommentEvent(): Promise<void> {
     console.log('Starting comment event workflow')
     if (await this.hasLabelToAdd()) {

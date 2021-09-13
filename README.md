@@ -1,6 +1,6 @@
 # Need More Info
 
- A GitHub Action that requests more info when required content is not included in an issue. You can check out test runs [here](https://github.com/benelan/need-info-action/issues).
+ A GitHub Action that requests more info when required content is not included in an issue. You can check out test runs [here](https://github.com/benelan/need-info-action/issues). There are instructions for automatically closing `need more info` issues at the bottom.
 
  ## Configuration
 The Action has two properties that have defaults and are not required.
@@ -78,8 +78,8 @@ commentFooter: 'This issue will be automatically closed in a week if the informa
 The appropriate method is determined depending on whether the Action is triggered by an issue or comment event.
 
 ### Issue Event Webhook
-The `issues` event method can be run on `opened`, `edited` and/or `labeled` actions. 
-- The Action checks if an issue has at least one of the `labelsToCheck`. If it does, it checks the issue body for the `requiredItems`.
+The `issues` event methods can be run on `opened`, `edited`, and/or `labeled`.
+- The Action checks if an issue has at least one of the `labelsToCheck`, or in the case of a `labeled` action, checks if the added label is a label to check. If so, it checks the issue body for the `requiredItems`.
   - If the issue satisfies all of the requirements then the Action ends.
   - If any requirement is not satisfied then `labelToAdd` is added to the issue. The Action comments on the issue with the `response` for all of the `requiredItems` that were not provided.
 - If the issue does not have any `labelsToCheck` then the Action ends.
@@ -95,7 +95,7 @@ The `issue_comment` event method can be run on `created` and/or `edited` actions
 
 
 ## Closing Issues
-This Action can be used in conjunction with [Close Stale Issues](https://github.com/marketplace/actions/close-stale-issues), which can be set up to close issues with the `labelToAdd` after a certain amount of time.
+This Action can be used in conjunction with [Close Stale Issues](https://github.com/marketplace/actions/close-stale-issues), which can be [set up](https://github.com/benelan/need-info-action/tree/main/.github/workflows/close-issue.yml) to close issues with the `labelToAdd` after a certain amount of time. You can check out a test run [here](https://github.com/benelan/need-info-action/issues/28).
 
 ### Example
 ```yaml
