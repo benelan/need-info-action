@@ -2,6 +2,17 @@
 
  A GitHub Action that requests more info when required content is not included in an issue. You can check out test runs [here](https://github.com/benelan/need-info-action/issues). There are instructions for automatically closing `need more info` issues at the bottom.
 
+- [Need More Info](#need-more-info)
+  - [Configuration](#configuration)
+    - [Example Workflow File](#example-workflow-file)
+    - [Example Config File](#example-config-file)
+  - [How It Works](#how-it-works)
+    - [Issue Event Webhook](#issue-event-webhook)
+    - [Comment Event Webhook](#comment-event-webhook)
+  - [Closing Issues](#closing-issues)
+    - [Example](#example)
+
+
  ## Configuration
 The Action has two properties that have defaults and are not required.
 - __config-path__: Path to the config file, defaults to `.github/need-info.yml`
@@ -14,10 +25,10 @@ The Action has two properties that have defaults and are not required.
 name: 'Issue Info'
 on:
   issues:
-    types: [opened, edited, labeled] # can pick and choose types
+    types: [labeled]
     branches: [master]
   issue_comment:
-    types: [created, edited]
+    types: [created]
     branches: [master]
 jobs:
   verify:

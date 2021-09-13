@@ -114,8 +114,12 @@ export default class NeedInfo {
     const {
       payload: {label}
     } = context
-    // the added label is a label to check
-    if (label && this.config.labelsToCheck.includes(label.name)) {
+    // the added label is a label to check and issue is not already marked
+    if (
+      label &&
+      this.config.labelsToCheck.includes(label.name) &&
+      !(await this.hasLabelToAdd())
+    ) {
       console.log('The added label is a label to check')
       const {body, login} = await this.getIssueInfo()
       if (body && login && !this.config.exemptUsers.includes(login)) {
@@ -133,7 +137,9 @@ export default class NeedInfo {
         console.log('The user is exempt or the issue body is empty, ending run')
       }
     } else {
-      console.log('The added label is not a label to check, ending run')
+      console.log(
+        'The added label is not a label to check or the issue already has the label to add, ending run'
+      )
     }
   }
 

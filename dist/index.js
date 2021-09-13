@@ -209,8 +209,10 @@ class NeedInfo {
         return __awaiter(this, void 0, void 0, function* () {
             console.log('Starting label event workflow');
             const { payload: { label } } = github_1.context;
-            // the added label is a label to check
-            if (label && this.config.labelsToCheck.includes(label.name)) {
+            // the added label is a label to check and issue is not already marked
+            if (label &&
+                this.config.labelsToCheck.includes(label.name) &&
+                !(yield this.hasLabelToAdd())) {
                 console.log('The added label is a label to check');
                 const { body, login } = yield this.getIssueInfo();
                 if (body && login && !this.config.exemptUsers.includes(login)) {
@@ -227,7 +229,7 @@ class NeedInfo {
                 }
             }
             else {
-                console.log('The added label is not a label to check, ending run');
+                console.log('The added label is not a label to check or the issue already has the label to add, ending run');
             }
         });
     }

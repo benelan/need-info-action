@@ -2,7 +2,6 @@ labelToAdd: 'need more info'
 labelsToCheck:
   - bug
   - enhancement
-commentHeader: 'More information is required to proceed:'
 requiredItems:
   -
     response: '- Use the appropriate format from the issue templates'
@@ -18,4 +17,10 @@ requiredItems:
       - codepen.io
       - jsfiddle.net
       - codesandbox.io
+# optional properties below
+commentHeader: 'More information is required to proceed:'
 commentFooter: 'This issue will be automatically closed in a week if the information is not provided. Thanks for your understanding.'
+caseSensitive: true
+exemptUsers:
+  - maintainer-username1
+  - maintainer-username2
