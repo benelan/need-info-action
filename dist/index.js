@@ -136,7 +136,7 @@ class NeedInfo {
                 (action === 'created' || action === 'edited')) {
                 yield this.onCommentEvent();
             }
-            else if (eventName === 'issue' && action === 'labeled') {
+            else if (eventName === 'issues' && action === 'labeled') {
                 yield this.onLabelEvent();
             }
             else {
@@ -198,7 +198,7 @@ class NeedInfo {
             }
         });
     }
-    /** issue webhooks */
+    /** issue label webhooks */
     onLabelEvent() {
         return __awaiter(this, void 0, void 0, function* () {
             console.log('Starting label event workflow');

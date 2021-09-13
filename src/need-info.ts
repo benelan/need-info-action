@@ -34,7 +34,7 @@ export default class NeedInfo {
       (action === 'created' || action === 'edited')
     ) {
       await this.onCommentEvent()
-    } else if (eventName === 'issue' && action === 'labeled') {
+    } else if (eventName === 'issues' && action === 'labeled') {
       await this.onLabelEvent()
     } else {
       throw new Error(
