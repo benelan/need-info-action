@@ -13,6 +13,7 @@ export default class Config {
   labelToAdd: string
   labelsToCheck: string[]
   caseSensitive: boolean
+  exemptUsers: string[]
 
   constructor(content: string) {
     const config = this.parseConfig(content)
@@ -22,6 +23,7 @@ export default class Config {
     this.commentFooter = config.commentFooter || ''
     this.commentHeader = config.commentHeader || ''
     this.caseSensitive = config.caseSensitive || false
+    this.exemptUsers = config.exemptUsers || []
   }
 
   isValidRequiredItem = (item: RequiredItem): item is RequiredItem =>

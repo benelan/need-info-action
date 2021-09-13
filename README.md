@@ -39,6 +39,7 @@ The following properties can be set in the configuration file.
 | commentHeader              | string         | Message above the missing content responses          |
 | commentFooter              | string         | Message below the missing content responses          |
 | caseSensitive              | boolean        | Are required items case sensitive, default is false  |
+| exemptUsers                | string[]       | Users that are exempt from providing required items  |
 
 
 
@@ -56,8 +57,6 @@ labelToAdd: 'need more info'
 labelsToCheck:
   - 'bug'
   - 'enhancement'
-caseSensitive: true # default is false
-commentHeader: 'More information is required to proceed:'
 requiredItems:
   -
     response: '- Use the appropriate format from the issue templates'
@@ -73,7 +72,12 @@ requiredItems:
       - 'codepen.io'
       - 'jsfiddle.net'
       - 'codesandbox.io'
+# optional properties below
+commentHeader: 'More information is required to proceed:'
 commentFooter: 'This issue will be automatically closed in a week if the information is not provided. Thanks for your understanding.'
+caseSensitive: true
+exemptUsers:
+  - benelan
  ```
 
 ## How It Works

@@ -26,6 +26,8 @@ class Config {
         this.labelsToCheck = config.labelsToCheck;
         this.commentFooter = config.commentFooter || '';
         this.commentHeader = config.commentHeader || '';
+        this.caseSensitive = config.caseSensitive || false;
+        this.exemptUsers = config.exemptUsers || [];
     }
     isValidConfig(obj) {
         return obj !== null &&
@@ -150,8 +152,8 @@ class NeedInfo {
             console.log('Starting issue event workflow');
             // issue has a labelToCheck and is not already marked with the labelToAdd
             if ((yield this.hasLabelToCheck()) && !(yield this.hasLabelToAdd())) {
-                const { body } = yield this.getIssueInfo();
-                if (body) {
+                const { body, login } = yield this.getIssueInfo();
+                if (body && login && !this.config.exemptUsers.includes(login)) {
                     const responses = this.getNeedInfoResponses(body);
                     if (responses.length > 0) {
                         console.log('Issue does not have all required items, adding comment and label');
@@ -161,7 +163,7 @@ class NeedInfo {
                     }
                 }
                 else {
-                    console.log('The issue body is empty, ending run');
+                    console.log('The user is exempt or the issue body is empty, ending run');
                 }
             }
             else {
@@ -177,8 +179,12 @@ class NeedInfo {
                 console.log('Getting comment and issue info');
                 const { body, login: commentLogin } = yield this.getCommentInfo();
                 const { login: issueLogin } = yield this.getIssueInfo();
-                // make sure the commenter is the original poster
-                if (body && commentLogin && issueLogin && issueLogin === commentLogin) {
+                // make sure the commenter is the original poster and the user is not exempt
+                if (body &&
+                    commentLogin &&
+                    issueLogin &&
+                    issueLogin === commentLogin &&
+                    !this.config.exemptUsers.includes(issueLogin)) {
                     console.log('Checking comment for required items');
                     const responses = this.getNeedInfoResponses(body);
                     if (responses.length < this.config.requiredItems.length) {
@@ -190,7 +196,7 @@ class NeedInfo {
                     }
                 }
                 else {
-                    console.log(`The commenter is not the original poster or the comment is empty, ending run`);
+                    console.log(`The commenter is not the original poster, user is exempt, or comment is empty, ending run`);
                 }
             }
             else {
@@ -206,8 +212,8 @@ class NeedInfo {
             // the added label is a label to check
             if (label && this.config.labelsToCheck.includes(label.name)) {
                 console.log('The added label is a label to check');
-                const { body } = yield this.getIssueInfo();
-                if (body) {
+                const { body, login } = yield this.getIssueInfo();
+                if (body && login && !this.config.exemptUsers.includes(login)) {
                     const responses = this.getNeedInfoResponses(body);
                     if (responses.length > 0) {
                         console.log('Issue does not have all required items, adding comment and label');
@@ -217,7 +223,7 @@ class NeedInfo {
                     }
                 }
                 else {
-                    console.log('The issue body is empty, ending run');
+                    console.log('The user is exempt or the issue body is empty, ending run');
                 }
             }
             else {
@@ -232,10 +238,12 @@ class NeedInfo {
     getNeedInfoResponses(post) {
         console.log('Parsing for required items');
         // does the post include a string
-        const inPost = (text) => post.toLowerCase().includes(text.toLowerCase());
+        const postIncludes = (text) => this.config.caseSensitive
+            ? post.includes(text)
+            : post.toLowerCase().includes(text.toLowerCase());
         return this.config.requiredItems
-            .filter(item => (item.requireAll && !item.content.every(c => inPost(c))) ||
-            (!item.requireAll && !item.content.some(c => inPost(c))))
+            .filter(item => (item.requireAll && !item.content.every(c => postIncludes(c))) ||
+            (!item.requireAll && !item.content.some(c => postIncludes(c))))
             .map(item => item.response);
     }
     /**------------------- ISSUE/COMMENT METHODS -------------------*/

@@ -48,9 +48,9 @@ export default class NeedInfo {
     console.log('Starting issue event workflow')
     // issue has a labelToCheck and is not already marked with the labelToAdd
     if ((await this.hasLabelToCheck()) && !(await this.hasLabelToAdd())) {
-      const {body} = await this.getIssueInfo()
+      const {body, login} = await this.getIssueInfo()
 
-      if (body) {
+      if (body && login && !this.config.exemptUsers.includes(login)) {
         const responses = this.getNeedInfoResponses(body)
 
         if (responses.length > 0) {
@@ -62,7 +62,7 @@ export default class NeedInfo {
           await this.addLabel(this.config.labelToAdd)
         }
       } else {
-        console.log('The issue body is empty, ending run')
+        console.log('The user is exempt or the issue body is empty, ending run')
       }
     } else {
       console.log(
@@ -79,8 +79,14 @@ export default class NeedInfo {
       const {body, login: commentLogin} = await this.getCommentInfo()
       const {login: issueLogin} = await this.getIssueInfo()
 
-      // make sure the commenter is the original poster
-      if (body && commentLogin && issueLogin && issueLogin === commentLogin) {
+      // make sure the commenter is the original poster and the user is not exempt
+      if (
+        body &&
+        commentLogin &&
+        issueLogin &&
+        issueLogin === commentLogin &&
+        !this.config.exemptUsers.includes(issueLogin)
+      ) {
         console.log('Checking comment for required items')
         const responses = this.getNeedInfoResponses(body)
 
@@ -94,7 +100,7 @@ export default class NeedInfo {
         }
       } else {
         console.log(
-          `The commenter is not the original poster or the comment is empty, ending run`
+          `The commenter is not the original poster, user is exempt, or comment is empty, ending run`
         )
       }
     } else {
@@ -111,8 +117,8 @@ export default class NeedInfo {
     // the added label is a label to check
     if (label && this.config.labelsToCheck.includes(label.name)) {
       console.log('The added label is a label to check')
-      const {body} = await this.getIssueInfo()
-      if (body) {
+      const {body, login} = await this.getIssueInfo()
+      if (body && login && !this.config.exemptUsers.includes(login)) {
         const responses = this.getNeedInfoResponses(body)
 
         if (responses.length > 0) {
@@ -124,7 +130,7 @@ export default class NeedInfo {
           await this.addLabel(this.config.labelToAdd)
         }
       } else {
-        console.log('The issue body is empty, ending run')
+        console.log('The user is exempt or the issue body is empty, ending run')
       }
     } else {
       console.log('The added label is not a label to check, ending run')
