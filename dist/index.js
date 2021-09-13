@@ -162,7 +162,7 @@ class NeedInfo {
                 }
             }
             else {
-                console.log('The issue does not have a label to check, ending run');
+                console.log('The issue already has the label to add or does not have a label to check, ending run');
             }
         });
     }
@@ -283,7 +283,7 @@ class NeedInfo {
         return __awaiter(this, void 0, void 0, function* () {
             const { repo } = github_1.context;
             try {
-                console.log('checking if a label exists');
+                console.log('checking if the label exists');
                 yield this.octokit.rest.issues.getLabel(Object.assign(Object.assign({}, repo), { name }));
             }
             catch (e) {

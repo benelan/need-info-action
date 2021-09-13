@@ -63,7 +63,9 @@ export default class NeedInfo {
         console.log('The issue body is empty, ending run')
       }
     } else {
-      console.log('The issue does not have a label to check, ending run')
+      console.log(
+        'The issue already has the label to add or does not have a label to check, ending run'
+      )
     }
   }
 
@@ -203,7 +205,7 @@ export default class NeedInfo {
   async ensureLabelExists(name: string): Promise<void> {
     const {repo} = context
     try {
-      console.log('checking if a label exists')
+      console.log('checking if the label exists')
       await this.octokit.rest.issues.getLabel({
         ...repo,
         name
