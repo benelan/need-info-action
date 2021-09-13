@@ -129,12 +129,15 @@ class NeedInfo {
         return __awaiter(this, void 0, void 0, function* () {
             const { eventName, payload: { action } } = github_1.context;
             if (eventName === 'issues' &&
-                (action === 'opened' || action === 'edited' || action === 'labeled')) {
+                (action === 'opened' || action === 'edited')) {
                 yield this.onIssueEvent();
             }
             else if (eventName === 'issue_comment' &&
                 (action === 'created' || action === 'edited')) {
                 yield this.onCommentEvent();
+            }
+            else if (eventName === 'issue' && action === 'labeled') {
+                yield this.onLabelEvent();
             }
             else {
                 throw new Error(`Unsupported event "${eventName}" and/or action "${action}", ending run`);
@@ -192,6 +195,33 @@ class NeedInfo {
             }
             else {
                 console.log(`The comment does not have the required label, ending run`);
+            }
+        });
+    }
+    /** issue webhooks */
+    onLabelEvent() {
+        return __awaiter(this, void 0, void 0, function* () {
+            console.log('Starting label event workflow');
+            const { payload: { label } } = github_1.context;
+            // the added label is a label to check
+            if (label && this.config.labelsToCheck.includes(label.name)) {
+                console.log('The added label is a label to check');
+                const { body } = yield this.getIssueInfo();
+                if (body) {
+                    const responses = this.getNeedInfoResponses(body);
+                    if (responses.length > 0) {
+                        console.log('Issue does not have all required items, adding comment and label');
+                        yield this.createComment(responses);
+                        yield this.ensureLabelExists(this.config.labelToAdd);
+                        yield this.addLabel(this.config.labelToAdd);
+                    }
+                }
+                else {
+                    console.log('The issue body is empty, ending run');
+                }
+            }
+            else {
+                console.log('The added label is not a label to check, ending run');
             }
         });
     }

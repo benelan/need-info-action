@@ -26,7 +26,7 @@ export default class NeedInfo {
 
     if (
       eventName === 'issues' &&
-      (action === 'opened' || action === 'edited' || action === 'labeled')
+      (action === 'opened' || action === 'edited')
     ) {
       await this.onIssueEvent()
     } else if (
@@ -34,6 +34,8 @@ export default class NeedInfo {
       (action === 'created' || action === 'edited')
     ) {
       await this.onCommentEvent()
+    } else if (eventName === 'issue' && action === 'labeled') {
+      await this.onLabelEvent()
     } else {
       throw new Error(
         `Unsupported event "${eventName}" and/or action "${action}", ending run`
@@ -97,6 +99,35 @@ export default class NeedInfo {
       }
     } else {
       console.log(`The comment does not have the required label, ending run`)
+    }
+  }
+
+  /** issue label webhooks */
+  private async onLabelEvent(): Promise<void> {
+    console.log('Starting label event workflow')
+    const {
+      payload: {label}
+    } = context
+    // the added label is a label to check
+    if (label && this.config.labelsToCheck.includes(label.name)) {
+      console.log('The added label is a label to check')
+      const {body} = await this.getIssueInfo()
+      if (body) {
+        const responses = this.getNeedInfoResponses(body)
+
+        if (responses.length > 0) {
+          console.log(
+            'Issue does not have all required items, adding comment and label'
+          )
+          await this.createComment(responses)
+          await this.ensureLabelExists(this.config.labelToAdd)
+          await this.addLabel(this.config.labelToAdd)
+        }
+      } else {
+        console.log('The issue body is empty, ending run')
+      }
+    } else {
+      console.log('The added label is not a label to check, ending run')
     }
   }
 
