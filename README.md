@@ -1,16 +1,17 @@
 # Need More Info
 
- A GitHub Action that requests more info when required content is not included in an issue. You can check out test runs [here](https://github.com/benelan/need-info-action/issues). There are instructions for automatically closing `need more info` issues at the bottom.
+ A GitHub Action that requests more info when required content is not included in an issue. You can check out test runs [here](https://github.com/benelan/need-info-action/issues).
 
 - [Need More Info](#need-more-info)
   - [Configuration](#configuration)
     - [Example Workflow File](#example-workflow-file)
+    - [Config Properties](#config-properties)
     - [Example Config File](#example-config-file)
   - [How It Works](#how-it-works)
     - [Issue Event Webhook](#issue-event-webhook)
     - [Comment Event Webhook](#comment-event-webhook)
   - [Closing Issues](#closing-issues)
-    - [Example](#example)
+    - [Example Workflow File](#example-workflow-file-1)
 
 
  ## Configuration
@@ -40,6 +41,8 @@ jobs:
           github-token: 'super-duper-secret-token-sshhh'
           config-path: '.github/configs/not-default.yml'
 ```
+
+### Config Properties
 The following properties can be set in the configuration file.
 
 | Config Property            | Type           | Description                                          |
@@ -114,7 +117,7 @@ The `issue_comment` event method can be run on `created` and/or `edited` actions
 ## Closing Issues
 This Action can be used in conjunction with [Close Stale Issues](https://github.com/marketplace/actions/close-stale-issues), which can be [set up](https://github.com/benelan/need-info-action/tree/main/.github/workflows/close-issue.yml) to close issues with the `labelToAdd` after a certain amount of time. You can check out a test run [here](https://github.com/benelan/need-info-action/issues/28).
 
-### Example
+### Example Workflow File
 ```yaml
 # .github/workflows/close-issue.yml
 name: 'Need Info'
