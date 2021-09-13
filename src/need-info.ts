@@ -139,14 +139,16 @@ export default class NeedInfo {
     console.log('Parsing for required items')
 
     // does the post include a string
-    const inPost = (text: string): boolean =>
-      post.toLowerCase().includes(text.toLowerCase())
+    const postIncludes = (text: string): boolean =>
+      this.config.caseSensitive
+        ? post.includes(text)
+        : post.toLowerCase().includes(text.toLowerCase())
 
     return this.config.requiredItems
       .filter(
         item =>
-          (item.requireAll && !item.content.every(c => inPost(c))) ||
-          (!item.requireAll && !item.content.some(c => inPost(c)))
+          (item.requireAll && !item.content.every(c => postIncludes(c))) ||
+          (!item.requireAll && !item.content.some(c => postIncludes(c)))
       )
       .map(item => item.response)
   }

@@ -38,6 +38,7 @@ The following properties can be set in the configuration file.
 | labelToAdd _(required)_    | string         | Label added to issues with missing information       |
 | commentHeader              | string         | Message above the missing content responses          |
 | commentFooter              | string         | Message below the missing content responses          |
+| caseSensitive              | boolean        | Are required items case sensitive, default is false  |
 
 
 
@@ -55,6 +56,7 @@ labelToAdd: 'need more info'
 labelsToCheck:
   - 'bug'
   - 'enhancement'
+caseSensitive: true # default is false
 commentHeader: 'More information is required to proceed:'
 requiredItems:
   -
