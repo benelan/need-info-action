@@ -1,3 +1,8 @@
+<p align="center">
+  <a href="https://github.com/actions/need-info-action/actions"><img alt="need-info-action status" src="https://github.com/benelan/need-info-action/actions/workflows/verify-issue.yml/badge.svg"></a>
+  <a href="https://opensource.org/licenses/MIT"><img alt="need-info-action license" src="https://img.shields.io/badge/License-MIT-yellow.svg"></a>
+</p>
+
 # Need More Info
 
  A GitHub Action that requests more info when required content is not included in an issue. You can check out test runs [here](https://github.com/benelan/need-info-action/issues).

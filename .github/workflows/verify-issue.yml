@@ -1,4 +1,4 @@
-name: 'Issue Info'
+name: 'Need Info'
 on:
   issues:
     types: [labeled] # 'opened' and 'edited' are also options
