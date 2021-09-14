@@ -1,7 +1,5 @@
-<p align="center">
-  <a href="https://github.com/actions/need-info-action/actions"><img alt="need-info-action status" src="https://github.com/benelan/need-info-action/actions/workflows/verify-issue.yml/badge.svg"></a>
-  <a href="https://opensource.org/licenses/MIT"><img alt="need-info-action license" src="https://img.shields.io/badge/License-MIT-yellow.svg"></a>
-</p>
+[![Need Info](https://github.com/benelan/need-info-action/actions/workflows/verify-issue.yml/badge.svg)](https://github.com/benelan/need-info-action/actions/workflows/verify-issue.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 # Need More Info
 
