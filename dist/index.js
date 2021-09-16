@@ -27,6 +27,7 @@ class Config {
         this.commentFooter = config.commentFooter || '';
         this.commentHeader = config.commentHeader || '';
         this.caseSensitive = config.caseSensitive || false;
+        this.excludeComments = config.excludeComments || false;
         this.exemptUsers = config.exemptUsers || [];
     }
     isValidConfig(obj) {
@@ -239,10 +240,13 @@ class NeedInfo {
      */
     getNeedInfoResponses(post) {
         console.log('Parsing for required items');
+        const postContent = this.config.excludeComments
+            ? post.replace(/<!--[\s\S]*?-->/g, '')
+            : post;
         // does the post include a string
         const postIncludes = (text) => this.config.caseSensitive
-            ? post.includes(text)
-            : post.toLowerCase().includes(text.toLowerCase());
+            ? postContent.includes(text)
+            : postContent.toLowerCase().includes(text.toLowerCase());
         return this.config.requiredItems
             .filter(item => (item.requireAll && !item.content.every(c => postIncludes(c))) ||
             (!item.requireAll && !item.content.some(c => postIncludes(c))))

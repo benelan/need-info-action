@@ -13,6 +13,7 @@ export default class Config {
   labelToAdd: string
   labelsToCheck: string[]
   caseSensitive: boolean
+  excludeComments: boolean
   exemptUsers: string[]
 
   constructor(content: string) {
@@ -23,6 +24,7 @@ export default class Config {
     this.commentFooter = config.commentFooter || ''
     this.commentHeader = config.commentHeader || ''
     this.caseSensitive = config.caseSensitive || false
+    this.excludeComments = config.excludeComments || false
     this.exemptUsers = config.exemptUsers || []
   }
 

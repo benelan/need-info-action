@@ -1,4 +1,4 @@
-name: 'Close Issue'
+name: 'Need Info - Close'
 on:
   schedule:
     - cron: '30 1 * * *'

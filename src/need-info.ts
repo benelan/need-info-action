@@ -150,11 +150,15 @@ export default class NeedInfo {
   getNeedInfoResponses(post: string): string[] {
     console.log('Parsing for required items')
 
+    const postContent = this.config.excludeComments
+      ? post.replace(/<!--[\s\S]*?-->/g, '')
+      : post
+
     // does the post include a string
     const postIncludes = (text: string): boolean =>
       this.config.caseSensitive
-        ? post.includes(text)
-        : post.toLowerCase().includes(text.toLowerCase())
+        ? postContent.includes(text)
+        : postContent.toLowerCase().includes(text.toLowerCase())
 
     return this.config.requiredItems
       .filter(

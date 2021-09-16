@@ -21,6 +21,7 @@ requiredItems:
 commentHeader: 'More information is required to proceed:'
 commentFooter: 'This issue will be automatically closed in a week if the information is not provided. Thanks for your understanding.'
 caseSensitive: true
+excludeComments: true
 exemptUsers:
   - maintainer-username1
   - maintainer-username2

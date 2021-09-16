@@ -38,7 +38,7 @@ jobs:
   verify:
     runs-on: ubuntu-latest
     steps:
-      - uses: benelan/need-info-action@v1.1.0
+      - uses: benelan/need-info-action@v1.2.0
         # the rest is not required if using the defaults
         with:
           github-token: 'super-duper-secret-token-sshhh'
@@ -55,7 +55,8 @@ The following properties can be set in the configuration file.
 | labelToAdd _(required)_    | string         | Label added to issues with missing information       |
 | commentHeader              | string         | Message above the missing content responses          |
 | commentFooter              | string         | Message below the missing content responses          |
-| caseSensitive              | boolean        | Are required items case sensitive, default is false  |
+| caseSensitive              | boolean        | Are required items case sensitive, default: false    |
+| excludeComments            | boolean        | Remove content in markdown comments, default: false  |
 | exemptUsers                | string[]       | Users that are exempt from providing required items  |
 
 
@@ -93,6 +94,7 @@ requiredItems:
 commentHeader: 'More information is required to proceed:'
 commentFooter: 'This issue will be automatically closed in a week if the information is not provided. Thanks for your understanding.'
 caseSensitive: true
+excludeComments: true
 exemptUsers:
   - benelan
  ```
