@@ -56,7 +56,7 @@ The following properties can be set in the configuration file.
 | commentHeader              | string         | Message above the missing content responses          |
 | commentFooter              | string         | Message below the missing content responses          |
 | caseSensitive              | boolean        | Are required items case sensitive, default: false    |
-| excludeComments            | boolean        | Remove content in markdown comments, default: false  |
+| excludeComments            | boolean        | Exclude content in markdown comments, default: false |
 | exemptUsers                | string[]       | Users that are exempt from providing required items  |
 
 
