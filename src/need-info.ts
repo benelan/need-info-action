@@ -150,6 +150,7 @@ export default class NeedInfo {
   getNeedInfoResponses(post: string): string[] {
     console.log('Parsing for required items')
 
+    // exclude markdown comments
     const postContent = this.config.excludeComments
       ? post.replace(/<!--[\s\S]*?-->/g, '')
       : post
@@ -160,13 +161,28 @@ export default class NeedInfo {
         ? postContent.includes(text)
         : postContent.toLowerCase().includes(text.toLowerCase())
 
-    return this.config.requiredItems
+    // responses that don't have required items
+    const requiredResponses = this.config.requiredItems
       .filter(
         item =>
           (item.requireAll && !item.content.every(c => postIncludes(c))) ||
           (!item.requireAll && !item.content.some(c => postIncludes(c)))
       )
       .map(item => item.response)
+
+    // responses that do have additional items
+    const additionalResponses = this.config.includedItems
+      .filter(
+        item =>
+          (item.requireAll && item.content.every(c => postIncludes(c))) ||
+          (!item.requireAll && item.content.some(c => postIncludes(c)))
+      )
+      .map(item => item.response)
+
+    // only add additional responses if there are required responses
+    return requiredResponses.length
+      ? [...requiredResponses, ...additionalResponses]
+      : requiredResponses
   }
 
   /**------------------- ISSUE/COMMENT METHODS -------------------*/

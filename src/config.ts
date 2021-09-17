@@ -1,13 +1,14 @@
 import {load} from 'js-yaml'
 
-export interface RequiredItem {
+export interface InfoItem {
   content: string[]
   response: string
   requireAll: boolean
 }
 
 export default class Config {
-  requiredItems: RequiredItem[]
+  requiredItems: InfoItem[]
+  includedItems: InfoItem[]
   commentHeader: string
   commentFooter: string
   labelToAdd: string
@@ -26,9 +27,10 @@ export default class Config {
     this.caseSensitive = config.caseSensitive || false
     this.excludeComments = config.excludeComments || false
     this.exemptUsers = config.exemptUsers || []
+    this.includedItems = config.includedItems || []
   }
 
-  isValidRequiredItem = (item: RequiredItem): item is RequiredItem =>
+  isValidRequiredItem = (item: InfoItem): item is InfoItem =>
     item !== null &&
     typeof item === 'object' &&
     'response' in item &&
