@@ -3,27 +3,25 @@ labelsToCheck:
   - bug
   - enhancement
 requiredItems:
-  -
-    response: '- Use the appropriate format from the issue templates'
-    requireAll: true
-    content:
+  - content:
       - '## Actual Behavior'
       - '## Expected Behavior'
-  -
+    response: '- Use the appropriate format from the issue templates'
+    requireAll: true
+  - content:
+      - 'https://jsbin.com/'
+      - 'https://codepen.io/'
+      - 'https://jsfiddle.net/'
+      - 'https://codesandbox.io/'
     response: '- A sample that reproduces the issue'
     requireAll: false
-    content:
-      - jsbin.com
-      - codepen.io
-      - jsfiddle.net
-      - codesandbox.io
 # optional properties below
 commentHeader: 'More information is required to proceed:'
 commentFooter: 'This issue will be automatically closed in a week if the information is not provided. Thanks for your understanding.'
 excludeComments: true
 includedItems:
   - content:
-    - 'https://esri.github.io/calcite-components/?path=/story/components-'
-    - 'https://developers.arcgis.com/calcite-design-system/components/'
-    response: '  - @benelan will confirm that the issue is reproducible in the documentation. In the meantime, no action is required on your end.'
+      - 'https://esri.github.io/calcite-components/?path=/story/components-'
+      - 'https://developers.arcgis.com/calcite-design-system/components/'
+    response: '  - @benelan will confirm that the issue is reproducible in the documentation. In the meantime, **no action is required** on your end.'
     requireAll: false

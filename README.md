@@ -3,7 +3,7 @@
 
 # Need More Info
 
-A GitHub Action that requests more info when required content is not included in an issue. You can check out test runs [here](https://github.com/benelan/need-info-action/issues).
+A GitHub Action that requests more info when required content is not included in an issue. You can check out test runs [here](https://github.com/benelan/need-info-action/issues?q=is%3Aissue+is%3Aclosed+label%3Atest).
 
 - [Need More Info](#need-more-info)
   - [Configuration](#configuration)
@@ -27,7 +27,7 @@ The Action has two properties that have defaults and are not required.
 
 ```yaml
 # .github/workflows/verify-info.yml
-name: 'Issue Info'
+name: 'Need Info - Verify'
 on:
   issues:
     types: [labeled]
@@ -39,7 +39,7 @@ jobs:
   verify:
     runs-on: ubuntu-latest
     steps:
-      - uses: benelan/need-info-action@v1.2.0
+      - uses: benelan/need-info-action@v1.3.0
         # the rest is not required if using the defaults
         with:
           github-token: 'super-duper-secret-token-sshhh'
@@ -95,14 +95,14 @@ commentFooter: 'This issue will be automatically closed in a week if the informa
 caseSensitive: true
 excludeComments: true # don't parse markdown comments in the issue/comment
 exemptUsers:
-  - maintainer-username1
-  - maintainer-username2
+  - benelan
 includedItems:
   - content:
-      - 'https://esri.github.io/calcite-components/?path=/story/components-'
-      - 'https://developers.arcgis.com/calcite-design-system/components/'
-    response: '- @benelan will confirm that the issue is reproducible in the documentation. In the meantime, no action is required on your end.'
+    - 'https://esri.github.io/calcite-components/?path=/story/components-'
+    - 'https://developers.arcgis.com/calcite-design-system/components/'
+    response: '  - @benelan will confirm that the issue is reproducible in the documentation. In the meantime, **no action is required** on your end.'
     requireAll: false
+
 ```
 
 ## How It Works
@@ -137,7 +137,7 @@ This Action can be used in conjunction with [Close Stale Issues](https://github.
 
 ```yaml
 # .github/workflows/close-issue.yml
-name: 'Need Info'
+name: 'Need Info - Close'
 on:
   schedule:
     - cron: '30 1 * * *'
