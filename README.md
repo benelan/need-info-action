@@ -101,7 +101,7 @@ includedItems:
   - content:
       - 'https://esri.github.io/calcite-components/?path=/story/components-'
       - 'https://developers.arcgis.com/calcite-design-system/components/'
-    response: '<br>@benelan will confirm that the issue is reproducible in the documentation. In the meantime, no action is required on your end.'
+    response: '<br><br><br>@benelan will confirm that the issue is reproducible in the documentation. In the meantime, no action is required on your end.'
     requireAll: false
 ```
 
