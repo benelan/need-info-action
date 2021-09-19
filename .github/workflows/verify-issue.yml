@@ -1,10 +1,10 @@
 name: 'Need Info - Verify'
 on:
   issues:
-    types: [labeled] # 'opened' and 'edited' are also options
+    types: [labeled, edited]
     branches: [master]
   issue_comment:
-    types: [created] # edited' is also  an option
+    types: [created, edited] 
     branches: [master]
 jobs:
   verify:

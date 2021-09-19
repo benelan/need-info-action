@@ -113,10 +113,12 @@ The appropriate method is determined depending on whether the Action is triggere
 
 The `issues` event methods can be run on `opened`, `edited`, and/or `labeled`.
 
-- The Action checks if an issue has at least one of the `labelsToCheck`, or in the case of a `labeled` action, checks if the added label is a label to check. If so, it checks the issue body for the `requiredItems`.
+
+- The `opened` action checks if an issue has at least one of the `labelsToCheck`. The `labeled` action, checks if the added label is a label to check. If so, it checks the issue body for the `requiredItems`.
   - If the issue satisfies all of the requirements then the Action ends.
-  - If any requirement is not satisfied then `labelToAdd` is added to the issue. The Action comments on the issue with the `response` for all of the `requiredItems` that were not provided. The Action also comments with the response for the `includedItems` that are in the issue. The `includedItems` can be used to explain why certain content cannot be accepted in place of requiredItems, among other things.
-- If the issue does not have any `labelsToCheck` then the Action ends.
+  - If any requirement is not satisfied then `labelToAdd` is added to the issue. The Action comments on the issue with the `response` for all of the `requiredItems` that were not provided. The Action also comments with the response for the `includedItems` that are in the issue. The `includedItems` can be used to explain why certain content cannot be accepted in place of required items, among other things.
+- The `edited` action checks if an issue has the `labelToAdd`. If it does, it checks the issue body for the required items.
+  -  If the edited issue body now contains _all_ of the required items, the `labelToAdd` is removed.
 
 ### Comment Event Webhook
 

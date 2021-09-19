@@ -132,16 +132,18 @@ class NeedInfo {
     verify() {
         return __awaiter(this, void 0, void 0, function* () {
             const { eventName, payload: { action } } = github_1.context;
-            if (eventName === 'issues' &&
-                (action === 'opened' || action === 'edited')) {
-                yield this.onIssueEvent();
+            if (eventName === 'issues' && action === 'opened') {
+                yield this.onOpenEvent();
+            }
+            else if (eventName === 'issues' && action === 'edited') {
+                yield this.onEditEvent();
+            }
+            else if (eventName === 'issues' && action === 'labeled') {
+                yield this.onLabelEvent();
             }
             else if (eventName === 'issue_comment' &&
                 (action === 'created' || action === 'edited')) {
                 yield this.onCommentEvent();
-            }
-            else if (eventName === 'issues' && action === 'labeled') {
-                yield this.onLabelEvent();
             }
             else {
                 throw new Error(`Unsupported event "${eventName}" and/or action "${action}", ending run`);
@@ -149,9 +151,9 @@ class NeedInfo {
         });
     }
     /** issue webhooks */
-    onIssueEvent() {
+    onOpenEvent() {
         return __awaiter(this, void 0, void 0, function* () {
-            console.log('Starting issue event workflow');
+            console.log('Starting open event workflow');
             // issue has a labelToCheck and is not already marked with the labelToAdd
             if ((yield this.hasLabelToCheck()) && !(yield this.hasLabelToAdd())) {
                 const { body, login } = yield this.getIssueInfo();
@@ -173,7 +175,32 @@ class NeedInfo {
             }
         });
     }
-    /** issue comment webhooks */
+    onEditEvent() {
+        return __awaiter(this, void 0, void 0, function* () {
+            console.log('Starting edit event workflow');
+            if (yield this.hasLabelToAdd()) {
+                const { body } = yield this.getIssueInfo();
+                if (body) {
+                    const responses = this.getNeedInfoResponses(body);
+                    // if the user edits their issue post to contain all required items
+                    if (responses.length === 0) {
+                        console.log('Issue now contains all required items, removing label');
+                        this.removeLabel(this.config.labelToAdd);
+                    }
+                    else {
+                        console.log('The issue still does not contain all required items, ending run');
+                    }
+                }
+                else {
+                    console.log(`The issue is empty, ending run`);
+                }
+            }
+            else {
+                console.log(`The issue does not have the required label, ending run`);
+            }
+        });
+    }
+    /** For issue comment webhooks */
     onCommentEvent() {
         return __awaiter(this, void 0, void 0, function* () {
             console.log('Starting comment event workflow');
