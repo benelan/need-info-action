@@ -24,18 +24,17 @@ export default class NeedInfo {
       payload: {action}
     } = context
 
-    if (
-      eventName === 'issues' &&
-      (action === 'opened' || action === 'edited')
-    ) {
-      await this.onIssueEvent()
+    if (eventName === 'issues' && action === 'opened') {
+      await this.onOpenEvent()
+    } else if (eventName === 'issues' && action === 'edited') {
+      await this.onEditEvent()
+    } else if (eventName === 'issues' && action === 'labeled') {
+      await this.onLabelEvent()
     } else if (
       eventName === 'issue_comment' &&
       (action === 'created' || action === 'edited')
     ) {
       await this.onCommentEvent()
-    } else if (eventName === 'issues' && action === 'labeled') {
-      await this.onLabelEvent()
     } else {
       throw new Error(
         `Unsupported event "${eventName}" and/or action "${action}", ending run`
@@ -44,8 +43,8 @@ export default class NeedInfo {
   }
 
   /** issue webhooks */
-  private async onIssueEvent(): Promise<void> {
-    console.log('Starting issue event workflow')
+  private async onOpenEvent(): Promise<void> {
+    console.log('Starting open event workflow')
     // issue has a labelToCheck and is not already marked with the labelToAdd
     if ((await this.hasLabelToCheck()) && !(await this.hasLabelToAdd())) {
       const {body} = await this.getIssueInfo()
@@ -68,6 +67,30 @@ export default class NeedInfo {
       console.log(
         'The issue already has the label to add or does not have a label to check, ending run'
       )
+    }
+  }
+
+  private async onEditEvent(): Promise<void> {
+    console.log('Starting edit event workflow')
+    if (await this.hasLabelToAdd()) {
+      const {body} = await this.getIssueInfo()
+      if (body) {
+        const responses = this.getNeedInfoResponses(body)
+
+        // if the user edits their issue post to contain all required items
+        if (responses.length === 0) {
+          console.log('Issue now contains all required items, removing label')
+          this.removeLabel(this.config.labelToAdd)
+        } else {
+          console.log(
+            'The issue still does not contain all required items, ending run'
+          )
+        }
+      } else {
+        console.log(`The issue is empty, ending run`)
+      }
+    } else {
+      console.log(`The issue does not have the required label, ending run`)
     }
   }
 
