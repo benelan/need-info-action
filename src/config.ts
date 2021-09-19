@@ -1,17 +1,21 @@
 import {load} from 'js-yaml'
 
-export interface RequiredItem {
+export interface InfoItem {
   content: string[]
   response: string
   requireAll: boolean
 }
 
 export default class Config {
-  requiredItems: RequiredItem[]
+  requiredItems: InfoItem[]
+  includedItems: InfoItem[]
   commentHeader: string
   commentFooter: string
   labelToAdd: string
   labelsToCheck: string[]
+  caseSensitive: boolean
+  excludeComments: boolean
+  exemptUsers: string[]
 
   constructor(content: string) {
     const config = this.parseConfig(content)
@@ -20,9 +24,13 @@ export default class Config {
     this.labelsToCheck = config.labelsToCheck
     this.commentFooter = config.commentFooter || ''
     this.commentHeader = config.commentHeader || ''
+    this.caseSensitive = config.caseSensitive || false
+    this.excludeComments = config.excludeComments || false
+    this.exemptUsers = config.exemptUsers || []
+    this.includedItems = config.includedItems || []
   }
 
-  isValidRequiredItem = (item: RequiredItem): item is RequiredItem =>
+  isValidRequiredItem = (item: InfoItem): item is InfoItem =>
     item !== null &&
     typeof item === 'object' &&
     'response' in item &&

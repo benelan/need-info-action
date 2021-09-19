@@ -47,9 +47,9 @@ export default class NeedInfo {
     console.log('Starting open event workflow')
     // issue has a labelToCheck and is not already marked with the labelToAdd
     if ((await this.hasLabelToCheck()) && !(await this.hasLabelToAdd())) {
-      const {body} = await this.getIssueInfo()
+      const {body, login} = await this.getIssueInfo()
 
-      if (body) {
+      if (body && login && !this.config.exemptUsers.includes(login)) {
         const responses = this.getNeedInfoResponses(body)
 
         if (responses.length > 0) {
@@ -61,7 +61,7 @@ export default class NeedInfo {
           await this.addLabel(this.config.labelToAdd)
         }
       } else {
-        console.log('The issue body is empty, ending run')
+        console.log('The user is exempt or the issue body is empty, ending run')
       }
     } else {
       console.log(
@@ -102,8 +102,14 @@ export default class NeedInfo {
       const {body, login: commentLogin} = await this.getCommentInfo()
       const {login: issueLogin} = await this.getIssueInfo()
 
-      // make sure the commenter is the original poster
-      if (body && commentLogin && issueLogin && issueLogin === commentLogin) {
+      // make sure the commenter is the original poster and the user is not exempt
+      if (
+        body &&
+        commentLogin &&
+        issueLogin &&
+        issueLogin === commentLogin &&
+        !this.config.exemptUsers.includes(issueLogin)
+      ) {
         console.log('Checking comment for required items')
         const responses = this.getNeedInfoResponses(body)
 
@@ -117,7 +123,7 @@ export default class NeedInfo {
         }
       } else {
         console.log(
-          `The commenter is not the original poster or the comment is empty, ending run`
+          `The commenter is not the original poster, user is exempt, or comment is empty, ending run`
         )
       }
     } else {
@@ -131,11 +137,15 @@ export default class NeedInfo {
     const {
       payload: {label}
     } = context
-    // the added label is a label to check
-    if (label && this.config.labelsToCheck.includes(label.name)) {
+    // the added label is a label to check and issue is not already marked
+    if (
+      label &&
+      this.config.labelsToCheck.includes(label.name) &&
+      !(await this.hasLabelToAdd())
+    ) {
       console.log('The added label is a label to check')
-      const {body} = await this.getIssueInfo()
-      if (body) {
+      const {body, login} = await this.getIssueInfo()
+      if (body && login && !this.config.exemptUsers.includes(login)) {
         const responses = this.getNeedInfoResponses(body)
 
         if (responses.length > 0) {
@@ -147,10 +157,12 @@ export default class NeedInfo {
           await this.addLabel(this.config.labelToAdd)
         }
       } else {
-        console.log('The issue body is empty, ending run')
+        console.log('The user is exempt or the issue body is empty, ending run')
       }
     } else {
-      console.log('The added label is not a label to check, ending run')
+      console.log(
+        'The added label is not a label to check or the issue already has the label to add, ending run'
+      )
     }
   }
 
@@ -161,17 +173,39 @@ export default class NeedInfo {
   getNeedInfoResponses(post: string): string[] {
     console.log('Parsing for required items')
 
-    // does the post include a string
-    const inPost = (text: string): boolean =>
-      post.toLowerCase().includes(text.toLowerCase())
+    // exclude markdown comments
+    const postContent = this.config.excludeComments
+      ? post.replace(/<!--[\s\S]*?-->/g, '')
+      : post
 
-    return this.config.requiredItems
+    // does the post include a string
+    const postIncludes = (text: string): boolean =>
+      this.config.caseSensitive
+        ? postContent.includes(text)
+        : postContent.toLowerCase().includes(text.toLowerCase())
+
+    // responses that don't have required items
+    const requiredResponses = this.config.requiredItems
       .filter(
         item =>
-          (item.requireAll && !item.content.every(c => inPost(c))) ||
-          (!item.requireAll && !item.content.some(c => inPost(c)))
+          (item.requireAll && !item.content.every(c => postIncludes(c))) ||
+          (!item.requireAll && !item.content.some(c => postIncludes(c)))
       )
       .map(item => item.response)
+
+    // responses that do have additional items
+    const additionalResponses = this.config.includedItems
+      .filter(
+        item =>
+          (item.requireAll && item.content.every(c => postIncludes(c))) ||
+          (!item.requireAll && item.content.some(c => postIncludes(c)))
+      )
+      .map(item => item.response)
+
+    // only add additional responses if there are required responses
+    return requiredResponses.length
+      ? [...requiredResponses, ...additionalResponses]
+      : requiredResponses
   }
 
   /**------------------- ISSUE/COMMENT METHODS -------------------*/

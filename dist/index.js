@@ -26,6 +26,10 @@ class Config {
         this.labelsToCheck = config.labelsToCheck;
         this.commentFooter = config.commentFooter || '';
         this.commentHeader = config.commentHeader || '';
+        this.caseSensitive = config.caseSensitive || false;
+        this.excludeComments = config.excludeComments || false;
+        this.exemptUsers = config.exemptUsers || [];
+        this.includedItems = config.includedItems || [];
     }
     isValidConfig(obj) {
         return obj !== null &&
@@ -150,8 +154,8 @@ class NeedInfo {
             console.log('Starting issue event workflow');
             // issue has a labelToCheck and is not already marked with the labelToAdd
             if ((yield this.hasLabelToCheck()) && !(yield this.hasLabelToAdd())) {
-                const { body } = yield this.getIssueInfo();
-                if (body) {
+                const { body, login } = yield this.getIssueInfo();
+                if (body && login && !this.config.exemptUsers.includes(login)) {
                     const responses = this.getNeedInfoResponses(body);
                     if (responses.length > 0) {
                         console.log('Issue does not have all required items, adding comment and label');
@@ -161,7 +165,7 @@ class NeedInfo {
                     }
                 }
                 else {
-                    console.log('The issue body is empty, ending run');
+                    console.log('The user is exempt or the issue body is empty, ending run');
                 }
             }
             else {
@@ -169,7 +173,7 @@ class NeedInfo {
             }
         });
     }
-    /** For issue comment webhooks */
+    /** issue comment webhooks */
     onCommentEvent() {
         return __awaiter(this, void 0, void 0, function* () {
             console.log('Starting comment event workflow');
@@ -177,8 +181,12 @@ class NeedInfo {
                 console.log('Getting comment and issue info');
                 const { body, login: commentLogin } = yield this.getCommentInfo();
                 const { login: issueLogin } = yield this.getIssueInfo();
-                // make sure the commenter is the original poster
-                if (body && commentLogin && issueLogin && issueLogin === commentLogin) {
+                // make sure the commenter is the original poster and the user is not exempt
+                if (body &&
+                    commentLogin &&
+                    issueLogin &&
+                    issueLogin === commentLogin &&
+                    !this.config.exemptUsers.includes(issueLogin)) {
                     console.log('Checking comment for required items');
                     const responses = this.getNeedInfoResponses(body);
                     if (responses.length < this.config.requiredItems.length) {
@@ -190,7 +198,7 @@ class NeedInfo {
                     }
                 }
                 else {
-                    console.log(`The commenter is not the original poster or the comment is empty, ending run`);
+                    console.log(`The commenter is not the original poster, user is exempt, or comment is empty, ending run`);
                 }
             }
             else {
@@ -203,11 +211,13 @@ class NeedInfo {
         return __awaiter(this, void 0, void 0, function* () {
             console.log('Starting label event workflow');
             const { payload: { label } } = github_1.context;
-            // the added label is a label to check
-            if (label && this.config.labelsToCheck.includes(label.name)) {
+            // the added label is a label to check and issue is not already marked
+            if (label &&
+                this.config.labelsToCheck.includes(label.name) &&
+                !(yield this.hasLabelToAdd())) {
                 console.log('The added label is a label to check');
-                const { body } = yield this.getIssueInfo();
-                if (body) {
+                const { body, login } = yield this.getIssueInfo();
+                if (body && login && !this.config.exemptUsers.includes(login)) {
                     const responses = this.getNeedInfoResponses(body);
                     if (responses.length > 0) {
                         console.log('Issue does not have all required items, adding comment and label');
@@ -217,11 +227,11 @@ class NeedInfo {
                     }
                 }
                 else {
-                    console.log('The issue body is empty, ending run');
+                    console.log('The user is exempt or the issue body is empty, ending run');
                 }
             }
             else {
-                console.log('The added label is not a label to check, ending run');
+                console.log('The added label is not a label to check or the issue already has the label to add, ending run');
             }
         });
     }
@@ -231,12 +241,28 @@ class NeedInfo {
      */
     getNeedInfoResponses(post) {
         console.log('Parsing for required items');
+        // exclude markdown comments
+        const postContent = this.config.excludeComments
+            ? post.replace(/<!--[\s\S]*?-->/g, '')
+            : post;
         // does the post include a string
-        const inPost = (text) => post.toLowerCase().includes(text.toLowerCase());
-        return this.config.requiredItems
-            .filter(item => (item.requireAll && !item.content.every(c => inPost(c))) ||
-            (!item.requireAll && !item.content.some(c => inPost(c))))
+        const postIncludes = (text) => this.config.caseSensitive
+            ? postContent.includes(text)
+            : postContent.toLowerCase().includes(text.toLowerCase());
+        // responses that don't have required items
+        const requiredResponses = this.config.requiredItems
+            .filter(item => (item.requireAll && !item.content.every(c => postIncludes(c))) ||
+            (!item.requireAll && !item.content.some(c => postIncludes(c))))
             .map(item => item.response);
+        // responses that do have additional items
+        const additionalResponses = this.config.includedItems
+            .filter(item => (item.requireAll && item.content.every(c => postIncludes(c))) ||
+            (!item.requireAll && item.content.some(c => postIncludes(c))))
+            .map(item => item.response);
+        // only add additional responses if there are required responses
+        return requiredResponses.length
+            ? [...requiredResponses, ...additionalResponses]
+            : requiredResponses;
     }
     /**------------------- ISSUE/COMMENT METHODS -------------------*/
     /** Get the text body and username of an issue */
