@@ -39,7 +39,7 @@ jobs:
   verify:
     runs-on: ubuntu-latest
     steps:
-      - uses: benelan/need-info-action@v1.3.0
+      - uses: benelan/need-info-action@v1.3.1
         # the rest is not required if using the defaults
         with:
           github-token: 'super-duper-secret-token-sshhh'
