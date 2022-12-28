@@ -14,7 +14,7 @@ A GitHub Action that requests more info when required content is not included in
     - [Issue Event Webhook](#issue-event-webhook)
     - [Comment Event Webhook](#comment-event-webhook)
   - [Closing Issues](#closing-issues)
-    - [Example Workflow File](#example-workflow-file-1)
+    - [Example Issue Closing Workflow](#example-issue-closing-workflow)
 
 ## Configuration
 
@@ -39,7 +39,7 @@ jobs:
   verify:
     runs-on: ubuntu-latest
     steps:
-      - uses: benelan/need-info-action@v1.3.1
+      - uses: benelan/need-info-action@v2
         # the rest is not required if using the defaults
         with:
           github-token: 'super-duper-secret-token-sshhh'
@@ -135,7 +135,7 @@ The `issue_comment` event method can be run on `created` and/or `edited` actions
 
 This Action can be used in conjunction with [Close Stale Issues](https://github.com/marketplace/actions/close-stale-issues), which can be [set up](https://github.com/benelan/need-info-action/tree/main/.github/workflows/close-issue.yml) to close issues with the `labelToAdd` after a certain amount of time. You can check out a test run [here](https://github.com/benelan/need-info-action/issues/28).
 
-### Example Workflow File
+### Example Issue Closing Workflow
 
 ```yaml
 # .github/workflows/close-issue.yml
