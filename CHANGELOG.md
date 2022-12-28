@@ -2,12 +2,22 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
-### [1.3.1](https://github.com/benelan/need-info-action/compare/v1.3.0...v1.3.1) (2021-09-19)
+## [2.0.0](https://github.com/benelan/need-info-action/compare/v1.3.1...v2.0.0) (2022-12-28)
 
+
+### ⚠ BREAKING CHANGES
+
+* uprade node runner to v16
+
+### build
+
+* uprade node runner to v16 ([a97cd35](https://github.com/benelan/need-info-action/commit/a97cd35172868c56cf098edf6521b19874f80a68))
+
+## [1.3.1](https://github.com/benelan/need-info-action/compare/v1.3.0...v1.3.1) (2021-09-19)
 
 ### Bug Fixes
 
-* issue edit event removes label if all required items are included ([f767c66](https://github.com/benelan/need-info-action/commit/f767c66d4ccb8712ae51ebac95e45e426f32d37b))
+- issue edit event removes label if all required items are included ([f767c66](https://github.com/benelan/need-info-action/commit/f767c66d4ccb8712ae51ebac95e45e426f32d37b))
 
 ## [1.3.0](https://github.com/benelan/need-info-action/compare/v1.1.0...v1.3.0) (2021-09-17)
 
