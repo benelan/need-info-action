@@ -11,7 +11,8 @@
     "lint": "eslint src/**/*.ts",
     "lint:fix": "eslint src/**/*.ts --fix",
     "package": "ncc build --source-map --license licenses.txt",
-    "release": "standard-version",
+    "release:prepare": "standard-version",
+    "release:publish": "git push --follow-tags origin main",
     "test": "jest",
     "all": "npm run build && npm run format && npm run lint:fix && npm run lint && npm run package && npm test"
   },
